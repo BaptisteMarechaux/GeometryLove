@@ -8,9 +8,16 @@
 #include <gl3w\GL\gl3w.h>
 #include <glfw\include\GLFW\glfw3.h>
 
+#include "ShaderManager.h"
+
 static void error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error %d: %s\n", error, description);
+}
+
+void Render()
+{
+
 }
 
 int main(int, char**)
@@ -25,7 +32,7 @@ int main(int, char**)
 #if __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
-	GLFWwindow* window = glfwCreateWindow(1280, 720, "ImGui OpenGL3 example", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(1280, 720, "Geometry Love", NULL, NULL);
 	glfwMakeContextCurrent(window);
 	gl3wInit();
 
@@ -59,7 +66,7 @@ int main(int, char**)
 			ImGui::Text("Hello, world!");
 			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
 			ImGui::ColorEdit3("clear color", (float*)&clear_color);
-			if (ImGui::Button("Test Window")) show_test_window ^= 1;
+			//if (ImGui::Button("Test Window")) show_test_window ^= 1;
 			if (ImGui::Button("Another Window")) show_another_window ^= 1;
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		}
@@ -86,7 +93,11 @@ int main(int, char**)
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		Render();
+
 		ImGui::Render();
+		
 		glfwSwapBuffers(window);
 	}
 

@@ -22,6 +22,12 @@
     <Filter Include="Source Files\gl3w">
       <UniqueIdentifier>{16cd80c4-3120-4cad-9808-f6abc43edb3a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\common">
+      <UniqueIdentifier>{69197d76-1101-43e9-b441-23d11f72b214}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{2dccda19-f38f-4d2b-9257-7d5cb26a7dcd}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -66,6 +72,9 @@
     <ClInclude Include="..\libs\gl3w\GL\glcorearb.h">
       <Filter>Source Files\gl3w</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\ShaderManager.h">
+      <Filter>Source Files\common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -89,5 +98,16 @@
     <ClCompile Include="..\libs\gl3w\GL\gl3w.c">
       <Filter>Source Files\gl3w</Filter>
     </ClCompile>
+    <ClCompile Include="..\common\ShaderManager.cpp">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\simple.fs">
+      <Filter>Source Files\shaders</Filter>
+    </None>
+    <None Include="..\shaders\simple.vs">
+      <Filter>Source Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
