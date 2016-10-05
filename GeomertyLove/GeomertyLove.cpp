@@ -18,6 +18,7 @@ GLFWwindow* window;
 GLuint vertex_buffer, vao;
 GLint mvp_location, position_location, color_location, program;
 int width, height;
+int index = 0;
 
 void Initialize();
 
@@ -34,12 +35,15 @@ void Render()
 	proj = glm::ortho(0.0f, float(width), 0.0f, float(height), 0.0f, 100.0f);
 	mvp = proj * model;
 
-	glUseProgram(program);
-	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
-
-	glBindVertexArray(vao);
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	glBindVertexArray(0);
+	if (points.size() > 0)
+	{
+		glUseProgram(program);
+		glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+		glPointSize(10.0f);
+		glBindVertexArray(vao);
+		glDrawArrays(GL_POINTS, 0, index);
+		glBindVertexArray(0);
+	}
 }
 
 void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
@@ -52,6 +56,11 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		std::cout << "Point " << x << " " << y << std::endl;
 		Point point(x, y);
 		points.push_back(point);
+
+		glBindVertexArray(vao);
+		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+		glBufferSubData(GL_ARRAY_BUFFER, sizeof(Point) * index++, 2*sizeof(float), &point);
+		glBindVertexArray(0);
 	}
 }
 
@@ -168,10 +177,10 @@ void Initialize()
 	
 	glGenBuffers(1, &vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(float), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point), points.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
-	glVertexAttribPointer(position_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3, (GLvoid *)0);
+	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glEnableVertexAttribArray(0);
-	
+
 	glBindVertexArray(0);
 }
