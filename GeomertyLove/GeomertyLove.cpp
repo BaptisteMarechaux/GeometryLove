@@ -7,11 +7,13 @@
 #include <gl3w\GL\gl3w.h>
 #include <glfw\include\GLFW\glfw3.h>
 
+#include "Point.h"
 #include "ShaderManager.h"
 #include "glm.hpp"
 #include "gtc\matrix_transform.hpp"
 #include "gtc\type_ptr.hpp"
 
+std::vector<Point> points;
 GLFWwindow* window;
 GLuint vertex_buffer, vao;
 GLint mvp_location, position_location, color_location, program;
@@ -38,6 +40,19 @@ void Render()
 	glBindVertexArray(vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindVertexArray(0);
+}
+
+void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
+{
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+	{
+		y = height - y;
+		std::cout << "Point " << x << " " << y << std::endl;
+		Point point(x, y);
+		points.push_back(point);
+	}
 }
 
 int main(int, char**)
@@ -134,6 +149,8 @@ void Initialize()
 	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
 
 	//glfwSetKeyCallback(window, key_callback);
+	glfwSetMouseButtonCallback(window, callbackMousePos);
+	
 	program = LoadShaders("..\\shaders\\simple.vs", "..\\shaders\\simple.fs");
 
 	GLfloat vertices[] = {
