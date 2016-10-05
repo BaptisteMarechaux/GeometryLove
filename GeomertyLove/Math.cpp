@@ -9,11 +9,12 @@ int orientation(Point p, Point q, Point r)
 	return (val > 0) ? 1 : 2; // clock or counterclock wise
 }
 
-void jarvisMarch(std::vector<Point> points)
+std::vector<Point> jarvisMarch(std::vector<Point> points)
 {
 	int n = points.size();
-	if (n < 3) return;
 	std::vector<Point> hull;
+	if (n < 3) return hull;
+	
 
 	// Start from leftmost point
 	int l = 0;
@@ -39,4 +40,5 @@ void jarvisMarch(std::vector<Point> points)
 					   // Print Result
 	for (int i = 0; i < hull.size(); i++)
 		std::cout << "(" << hull[i].x << ", " << hull[i].y << ")\n";
+	return hull;
 }

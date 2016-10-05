@@ -12,13 +12,15 @@
 #include "glm.hpp"
 #include "gtc\matrix_transform.hpp"
 #include "gtc\type_ptr.hpp"
+#include "Math.h"
 
 std::vector<Point> points;
+std::vector<Point> hull;
 GLFWwindow* window;
-GLuint vertex_buffer, vao;
+GLuint vertexBufferPoints, vertexBufferHull, vaoPoints, vaoHull;
 GLint mvp_location, position_location, color_location, program;
 int width, height;
-int index = 0;
+int index = 0, indexHull = 0;
 
 void Initialize();
 
@@ -34,14 +36,21 @@ void Render()
 	model = glm::mat4(1.0);
 	proj = glm::ortho(0.0f, float(width), 0.0f, float(height), 0.0f, 100.0f);
 	mvp = proj * model;
+	
+	glUseProgram(program);
+	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
+	glPointSize(10.0f);
 
 	if (points.size() > 0)
 	{
-		glUseProgram(program);
-		glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
-		glPointSize(10.0f);
-		glBindVertexArray(vao);
+		glBindVertexArray(vaoPoints);
 		glDrawArrays(GL_POINTS, 0, index);
+		glBindVertexArray(0);
+	}
+	if (hull.size() > 0)
+	{
+		glBindVertexArray(vaoHull);
+		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
 		glBindVertexArray(0);
 	}
 }
@@ -57,10 +66,18 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		Point point(x, y);
 		points.push_back(point);
 
-		glBindVertexArray(vao);
-		glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+		glBindVertexArray(vaoPoints);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
 		glBufferSubData(GL_ARRAY_BUFFER, sizeof(Point) * index++, 2*sizeof(float), &point);
 		glBindVertexArray(0);
+
+		hull = jarvisMarch(points);
+		glBindVertexArray(vaoHull);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
+		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
+
+		glBindVertexArray(0);
+		
 	}
 }
 
@@ -172,12 +189,24 @@ void Initialize()
 	position_location = glGetAttribLocation(program, "position");
 	//color_location = glGetAttribLocation(program, "color_in");
 
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
+	glGenVertexArrays(1, &vaoPoints);
+	glBindVertexArray(vaoPoints);
 	
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+	glGenBuffers(1, &vertexBufferPoints);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
 	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point), points.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(position_location);
+	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
+	glEnableVertexAttribArray(0);
+
+	glBindVertexArray(0);
+
+	glGenVertexArrays(1, &vaoHull);
+	glBindVertexArray(vaoHull);
+
+	glGenBuffers(1, &vertexBufferHull);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
+	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point), hull.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glEnableVertexAttribArray(0);
