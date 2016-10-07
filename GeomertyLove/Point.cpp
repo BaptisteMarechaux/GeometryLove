@@ -2,7 +2,8 @@
 
 Point::Point(float x, float y) : x(x), y(y){}
 Point::Point() : x(0), y(0) {}
-void Point::print()
+
+std::ostream& operator<<(std::ostream& os, const Point &point)
 {
-	std::cout << "X : " << x << " Y : " << y << std::endl;
+	return os << "X : " << point.x << "Y : " << point.y << std::endl;
 }
