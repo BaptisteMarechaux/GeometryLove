@@ -42,3 +42,36 @@ std::vector<Point> jarvisMarch(std::vector<Point> points)
 		std::cout << "(" << hull[i].x << ", " << hull[i].y << ")\n";
 	return hull;
 }
+
+std::vector<Point> grahamScan(std::vector<Point> points)
+{
+	int n = points.size();
+	std::vector<Point> hull;
+
+	if (n < 3)
+		return hull;
+
+	return hull;
+}
+
+std::vector<Point> divideAndConquer(std::vector<Point> points)
+{
+	return std::vector<Point>();
+}
+
+Point barycenter(std::vector<Point> points)
+{
+	Point finalPoint(0, 0);
+	int n = points.size();
+	int x, y;
+
+	for (int i = 0; i < n; i++)
+	{
+		x += points[i].x / n;
+		y += points[i].y / n;
+	}
+
+	finalPoint = Point(x, y);
+
+	return finalPoint;
+}

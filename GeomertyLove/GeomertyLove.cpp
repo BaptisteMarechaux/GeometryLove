@@ -25,6 +25,8 @@ int nbFrames = 0;
 double lastTime = 0.0f;
 static bool drawPoints = true;
 static bool jarvisMarchEnable = true;
+static bool grahamScanEnabled = false;
+static bool divideAndConquerEnabled = false;
 
 void Initialize();
 
@@ -44,6 +46,22 @@ void Render()
 	glUseProgram(program);
 	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
 	glPointSize(10.0f);
+
+	if (jarvisMarchEnable)
+	{
+		grahamScanEnabled = false;
+		divideAndConquerEnabled = false;
+	}
+	else if (grahamScanEnabled)
+	{
+		jarvisMarchEnable = false;
+		divideAndConquerEnabled = false;
+	}
+	else if (divideAndConquerEnabled)
+	{
+		jarvisMarchEnable = false;
+		grahamScanEnabled = false;
+	}
 
 	if (points.size() > 0)
 	{
@@ -102,7 +120,12 @@ int main(int, char**)
 		ImGui::Begin("Convex Hull & Voronoi");
 		ImGui::Text("This window is here to use the application!");
 		ImGui::Checkbox("Draw Points", &drawPoints);
+
+		//Modes d'enveloppe convexe
 		ImGui::Checkbox("Jarvis March", &jarvisMarchEnable);
+		ImGui::Checkbox("Graham Scan", &grahamScanEnabled);
+		ImGui::Checkbox("Divide and Conquer", &divideAndConquerEnabled);
+
 		ImGui::ColorEdit3("clear color", (float*)&clear_color);
 		if (ImGui::Button("Test Window")) show_test_window ^= 1;
 		ImGui::End();
