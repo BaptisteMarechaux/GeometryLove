@@ -47,6 +47,8 @@ void Render()
 	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
 	glPointSize(10.0f);
 
+	//Modes de sélection d'enveloppe convexe
+	//On ne peut choisir qu'un seul de ces modes à la fois
 	if (jarvisMarchEnable)
 	{
 		grahamScanEnabled = false;
