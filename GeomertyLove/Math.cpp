@@ -1,5 +1,6 @@
 #include "Math.h"
 #include <math.h>
+#include <algorithm>
 
 int orientation(Point p, Point q, Point r)
 {
@@ -134,4 +135,17 @@ Point barycenter(std::vector<Point> points)
 	finalPoint = Point(x, y);
 
 	return finalPoint;
+}
+
+std::vector<Triangle> triangulation(std::vector<Point> points)
+{
+	std::vector<Point> sortPoints = points;
+	std::vector<Triangle> result;
+
+	std::sort(sortPoints.begin(), sortPoints.end());
+
+	for (int i = 0; i < sortPoints.size(); i++)
+		std::cout << sortPoints[i] << std::endl;
+
+	return result;
 }

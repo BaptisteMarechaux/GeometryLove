@@ -7,3 +7,10 @@ std::ostream& operator<<(std::ostream& os, const Point &point)
 {
 	return os << "X : " << point.x << "Y : " << point.y << std::endl;
 }
+
+bool Point::operator<(const Point& point) const
+{
+	if (x < point.x || (x == point.x && y < point.y))
+		return true;
+	return false;
+}
