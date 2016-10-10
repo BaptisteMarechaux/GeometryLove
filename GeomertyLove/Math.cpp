@@ -24,37 +24,49 @@ int normVector(Point p1, Point p2)
 	return sqrt(x + y);
 }
 
+int normVector(Point vector)
+{
+	int x = pow(vector.x, 2);
+	int y = pow(vector.y, 2);
+	return sqrt(x + y);
+}
+
+double angle(Point vector, Point p1, Point p2)
+{
+	Point vectorPoint = makeVector(p1, p2);
+	int norm_vector_points = normVector(p1, p2);
+	int norm_vector = normVector(vector);
+
+	return acos((vectorPoint.x * vector.x + vectorPoint.y * vector.y) / (norm_vector_points * norm_vector));
+}
+
 std::vector<Point> jarvisMarch(std::vector<Point> points)
 {
 	int n = points.size();
 	std::vector<Point> hull;
 	if (n < 3) return hull;
-	
 
-	// Start from leftmost point
+	//find start point - abs min / ord min
 	int l = 0;
 	for (int i = 1; i < n; i++)
-		if (points[i].x < points[l].x)
+		if (points[i].x < points[l].x || (points[i].x == points[l].x && points[i].y < points[l].y))
 			l = i;
-
-	// moving counterclockwise
 	int current_index = l, next_index;
+
+	//do while not return to start point
 	do
 	{
 		hull.push_back(points[current_index]);
 		next_index = (current_index + 1) % n;
 		for (int i = 0; i < n; i++)
 		{
+			//counterclockwise
 			if (orientation(points[current_index], points[i], points[next_index]) == 2)
 				next_index = i;
 		}
 		current_index = next_index;
 
-	} while (current_index != l);  // While we don't come to first point
-
-					   // Print Result
-	for (int i = 0; i < hull.size(); i++)
-		std::cout << "(" << hull[i].x << ", " << hull[i].y << ")\n";
+	} while (current_index != l); 
 	return hull;
 }
 
