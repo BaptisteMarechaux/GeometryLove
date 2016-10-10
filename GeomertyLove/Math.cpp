@@ -73,11 +73,39 @@ std::vector<Point> jarvisMarch(std::vector<Point> points)
 std::vector<Point> grahamScan(std::vector<Point> points)
 {
 	int n = points.size();
+	int foundPoints = 0;
 	std::vector<Point> hull;
 
 	if (n < 3)
 		return hull;
 
+	Point bar = barycenter(points);
+
+	int smallerScalar = INFINITY;
+	int smallerScalarProdIndex;
+
+	do
+	{
+		
+		for (int i = 0; i < n; i++)
+		{
+			//Trouver le produit scalaire
+			float scalarProd = 0; //Fonction Produit scalaire
+
+			smallerScalarProdIndex = i;
+			//comparer avec les produits trouvés
+			
+			if (scalarProd == smallerScalarProdIndex)
+			{
+				smallerScalarProdIndex = 0;
+			}
+					
+		}
+		hull.push_back(points[smallerScalarProdIndex]);
+		foundPoints++;
+		
+	} while (foundPoints < n);
+	
 	return hull;
 }
 
