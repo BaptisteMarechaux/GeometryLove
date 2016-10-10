@@ -31,13 +31,18 @@ int normVector(Point vector)
 	return sqrt(x + y);
 }
 
+int dotProduct(Point p1, Point p2)
+{
+	return (p1.x * p2.x) + (p1.y * p2.y);
+}
+
 double angle(Point vector, Point p1, Point p2)
 {
 	Point vectorPoint = makeVector(p1, p2);
 	int norm_vector_points = normVector(p1, p2);
 	int norm_vector = normVector(vector);
 
-	return acos((vectorPoint.x * vector.x + vectorPoint.y * vector.y) / (norm_vector_points * norm_vector));
+	return acos(dotProduct(vectorPoint, vector) / (norm_vector_points * norm_vector));
 }
 
 std::vector<Point> jarvisMarch(std::vector<Point> points)

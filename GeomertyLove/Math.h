@@ -6,6 +6,7 @@ std::vector<Point> jarvisMarch(std::vector<Point> points);
 Point makeVector(Point p1, Point p2); 
 int normVector(Point p1, Point p2);
 int normVector(Point vector);
+int dotProduct(Point p1, Point p2);
 double angle(Point vector, Point p1, Point p2);
 
 std::vector<Point> grahamScan(std::vector<Point> points);
