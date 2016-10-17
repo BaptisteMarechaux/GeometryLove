@@ -18,7 +18,7 @@ std::vector<Point> points;
 std::vector<Point> hull;
 GLFWwindow* window;
 GLuint vertexBufferPoints, vertexBufferHull, vaoPoints, vaoHull;
-GLint mvp_location, position_location, color_location, program;
+GLuint mvp_location, position_location, color_location, program;
 int width, height;
 int index = 0, indexHull = 0;
 int nbFrames = 0;
@@ -68,7 +68,7 @@ void Render()
 	if (points.size() > 0)
 	{
 		glBindVertexArray(vaoPoints);
-		glDrawArrays(GL_POINTS, 0, index);
+		glDrawArrays(GL_POINTS, 0, points.size());
 		glBindVertexArray(0);
 	}
 	if (hull.size() > 0 && jarvisMarchEnable)
@@ -211,6 +211,8 @@ void Initialize()
 		width, 0, 0.0f,
 	};
 
+	//points.push_back(Point(400, 400));
+
 	mvp_location = glGetUniformLocation(program, "MVP");
 	position_location = glGetAttribLocation(program, "position");
 	//color_location = glGetAttribLocation(program, "color_in");
@@ -220,10 +222,9 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferPoints);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point), points.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point), &points[0], GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
-	glEnableVertexAttribArray(0);
 
 	glBindVertexArray(0);
 
@@ -235,7 +236,6 @@ void Initialize()
 	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point), hull.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
-	glEnableVertexAttribArray(0);
 
 	glBindVertexArray(0);
 }
