@@ -222,7 +222,7 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferPoints);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point), &points[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point), /*&points[0]*/ points.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 
