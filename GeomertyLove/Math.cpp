@@ -87,8 +87,8 @@ std::vector<Point> grahamScan(std::vector<Point> points)
 
 	Point bar = barycenter(points);
 
-	int smallerScalar = INFINITY;
-	int smallerScalarProdIndex;
+	int smallerDot = INFINITY;
+	int smallerDotProdIndex;
 
 	do
 	{
@@ -96,21 +96,23 @@ std::vector<Point> grahamScan(std::vector<Point> points)
 		for (int i = 0; i < n; i++)
 		{
 			//Trouver le produit scalaire
-			float scalarProd = 0; //Fonction Produit scalaire
+			float dotProd = 0; //Fonction Produit scalaire
 
-			smallerScalarProdIndex = i;
+			smallerDotProdIndex = i;
 			//comparer avec les produits trouvés
 			
-			if (scalarProd == smallerScalarProdIndex)
+			if (dotProd == smallerDotProdIndex)
 			{
-				smallerScalarProdIndex = 0;
+				smallerDotProdIndex = 0;
 			}
 					
 		}
-		hull.push_back(points[smallerScalarProdIndex]);
+		hull.push_back(points[smallerDotProdIndex]);
 		foundPoints++;
 		
 	} while (foundPoints < n);
+
+	hull = findAndSuppressConcavePoints(hull);
 	
 	return hull;
 }
@@ -148,4 +150,42 @@ std::vector<Triangle> triangulation(std::vector<Point> points)
 		std::cout << sortPoints[i] << std::endl;
 
 	return result;
+}
+
+std::vector<Point> findAndSuppressConcavePoints(std::vector<Point> points)
+{
+	Point initial;
+	if (points.size > 0)
+		initial = Point(points[0].x, points[0].y);
+	else
+		return std::vector<Point>();
+	Point pivot = Point(initial.x, initial.y);
+	Point next = points.size() > 1 ? points[1] : initial;
+	Point previous = points.size() > 2 ? points[2] : points.size() > 1 ? next : initial;
+	bool go = false;
+	do {
+		if (isConvexPoint(pivot, previous, next))
+		{
+			previous = pivot;
+			pivot = next;
+			//next = ???;
+			//Mettre a jour next et following
+			go = true;
+		}
+		else
+		{
+			points.erase(std::remove(points.begin(), points.end(), pivot), points.end());
+			next = pivot;
+			pivot = previous;
+			go = false;
+			//Mettre a jour next et following;
+		}
+	} while (pivot != initial && go == true);
+
+	return std::vector<Point>();
+}
+
+bool isConvexPoint(Point p, Point prevPoint, Point nextPoint)
+{
+	return false;
 }

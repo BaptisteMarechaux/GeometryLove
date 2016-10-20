@@ -14,3 +14,13 @@ bool Point::operator<(const Point& point) const
 		return true;
 	return false;
 }
+
+bool Point::operator==(const Point & point) const
+{
+	return (x == point.x || y == point.y);
+}
+
+bool Point::operator!=(const Point & point) const
+{
+	return (x != point.x || y != point.y);
+}

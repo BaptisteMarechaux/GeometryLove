@@ -77,6 +77,12 @@ void Render()
 		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
 		glBindVertexArray(0);
 	}
+	else if (hull.size() > 0 && grahamScan)
+	{
+		glBindVertexArray(vaoHull);
+		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
+		glBindVertexArray(0);
+	}
 }
 
 void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
@@ -222,7 +228,7 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferPoints);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point), /*&points[0]*/ points.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point), points.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 

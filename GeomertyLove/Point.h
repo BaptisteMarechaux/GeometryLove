@@ -15,4 +15,6 @@ class Point
 
 		friend std::ostream& operator<<(std::ostream& os, const Point &point);
 		bool operator<(const Point& point) const;
+		bool operator == (const Point& point) const;
+		bool operator != (const Point& point) const;
 };
