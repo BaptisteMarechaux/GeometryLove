@@ -99,10 +99,6 @@ std::vector<Point> jarvisMarch(std::vector<Point> points)
 		double angle_min = angle(vectorDirector, points[i], points[j]);
 		int lmax = normVector(points[i], points[j]);
 		inew = j;
-
-		std::cout << "angle_min " <<  angle_min << std::endl;
-		//std::cout << "norm " << lmax << std::endl;
-
 		for (j = inew + 1; j < n; j++)
 		{
 			if (j != i)
@@ -121,9 +117,6 @@ std::vector<Point> jarvisMarch(std::vector<Point> points)
 		
 	} while (i != first_index);
 
-
-	std::cout << hull.size() << std::endl;
-	std::cout << points.size() << std::endl;
 	return hull;
 }
 
@@ -328,7 +321,7 @@ void select_close(float x, float y, int& select, const std::vector<Point> &point
 std::vector<Point> findAndSuppressConcavePoints(std::vector<Point> points)
 {
 	Point initial;
-	if (points.size > 0)
+	if (points.size() > 0)
 		initial = Point(points[0].x, points[0].y);
 	else
 		return std::vector<Point>();
