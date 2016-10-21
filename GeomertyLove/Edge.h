@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef Edge_H
+#define Edge_H
+
 #include "Point.h"
 
 class Edge
@@ -12,3 +16,5 @@ class Edge
 		Point p1;
 		Point p2;
 };
+
+#endif

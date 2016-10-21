@@ -1,4 +1,5 @@
 #include "Triangle.h"
+#include "Math.h"
 
 Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) 
 {
@@ -41,5 +42,11 @@ bool Triangle::circumCircleContains(const Point &v)
 
 bool Triangle::containsPoint(const Point &point)
 {
-	return p1 == point || p2 == point || p3 == point;
+	bool b1, b2, b3;
+
+	b1 = sign(point, p1, p2) < 0.0f;
+	b2 = sign(point, p2, p3) < 0.0f;
+	b3 = sign(point, p3, p1) < 0.0f;
+
+	return ((b1 == b2) && (b2 == b3));
 }

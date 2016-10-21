@@ -184,12 +184,17 @@ Point barycenter(std::vector<Point> points)
 	return finalPoint;
 }
 
+float sign(Point p1, Point p2, Point p3)
+{
+	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+}
+
 std::vector<Edge> add_triangulation(Triangulation &T, Point point)
 {
 	std::vector<Triangle> _triangles;
 	std::vector<Edge> _edges;
 
-
+	//Cas A (T ne contient pas de triangles)
 	if (T.triangle.size() == 0)
 	{
 		if (T.sommets.size() == 0)
@@ -240,38 +245,76 @@ std::vector<Edge> add_triangulation(Triangulation &T, Point point)
 						}
 					}*/
 
-				}
-				if (colineaire)
-				{
-				}
-				else
-				{
-					std::vector<Edge> listeAreteTemp;
-					for (int i = 0; i < T.sommets.size(); i++)
-					{
-						listeAreteTemp.push_back(Edge(T.sommets[i], point));
-					}
-					T.sommets.push_back(point);
-				}
-				
 			}
-			
+			if (colineaire)
+			{
+			}
+			//Point 3.2 dans le poly
+			else
+			{
+				std::vector<Edge> listeAreteTemp;
+				for (int i = 0; i < T.sommets.size(); i++)
+				{
+					Edge newEdge = Edge(T.sommets[i], point);
+					listeAreteTemp.push_back(newEdge);
+					//T.sommets[i].e = newEdge;
+				}
+
+				for (int i = 0; i < T.aretes.size(); i++)
+				{
+					Point s1 = T.aretes[i].p1;
+					Point s2 = T.aretes[i].p2;
+
+					T.triangle.push_back(Triangle(s1, s2, point));
+				}
+
+				for (int i = 0; i < listeAreteTemp.size(); i++)
+				{
+					T.aretes.push_back(listeAreteTemp[i]);
+				}
+				T.sommets.push_back(point);
+			}
 		}
+	}
+	//Cas B (T contient des triangles)
+	else
+	{
+		std::vector<Edge> listeAreteTemp;
+		int triangleToremove = -1;
+		for (int i = 0; i < T.triangle.size(); i++)
+		{
+			if (T.triangle[i].containsPoint(point))
+			{
+				triangleToremove = i;
+				break;
+			}
+		}
+		//Cas B1-1
+		if (triangleToremove != -1)
+		{
+			listeAreteTemp.push_back(T.triangle[triangleToremove].e1);
+			listeAreteTemp.push_back(T.triangle[triangleToremove].e2);
+			listeAreteTemp.push_back(T.triangle[triangleToremove].e3);
+
+			T.triangle.erase(T.triangle.begin() + triangleToremove);
+		}
+		//Cas B1-2
+		else
+		{
+
+		}
+	}
 	return _edges;
 }
 	
-	//if (points.size() < 3)
-	//	return _edges;
-	//
-	//std::vector<Point> sortPoints = points;
-	//std::sort(sortPoints.begin(), sortPoints.end());
-	//
-	//for (int i = 0; i < sortPoints.size(); i++)
-	//	std::cout << sortPoints[i] << std::endl;
-
-
-	
-
+//if (points.size() < 3)
+//	return _edges;
+//
+//std::vector<Point> sortPoints = points;
+//std::sort(sortPoints.begin(), sortPoints.end());
+//
+//for (int i = 0; i < sortPoints.size(); i++)
+//	std::cout << sortPoints[i] << std::endl;
 
 /*std::vector<Edge> subsets;
 Triangle triangle = Triangle();

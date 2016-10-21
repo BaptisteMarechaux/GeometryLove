@@ -1,12 +1,13 @@
 #pragma once
 
+#ifndef Point_H
+#define Point_H
+
 #include <iostream>
 #include <ostream>
 
 class Point
 {
-	private:
-	
 	public:
 		float x;
 		float y;
@@ -18,3 +19,5 @@ class Point
 		bool operator == (const Point &point) const;
 		bool operator != (const Point& point) const;
 };
+
+#endif

@@ -1,4 +1,8 @@
 #pragma once
+
+#ifndef Triangle_H
+#define Triangle_H
+
 #include "Point.h"
 #include <vector>
 #include "Edge.h"
@@ -17,3 +21,5 @@ class Triangle
 		bool circumCircleContains(const Point &v);
 		bool containsPoint(const Point &point);
 };
+
+#endif
