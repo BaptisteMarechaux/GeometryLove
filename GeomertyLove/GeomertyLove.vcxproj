@@ -172,6 +172,7 @@
     <ClInclude Include="..\libs\imgui\stb_rect_pack.h" />
     <ClInclude Include="..\libs\imgui\stb_textedit.h" />
     <ClInclude Include="..\libs\imgui\stb_truetype.h" />
+    <ClInclude Include="Edge.h" />
     <ClInclude Include="imgui_impl_glfw_gl3.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Point.h" />
@@ -185,6 +186,7 @@
     <ClCompile Include="..\libs\imgui\imgui.cpp" />
     <ClCompile Include="..\libs\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\libs\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Edge.cpp" />
     <ClCompile Include="GeomertyLove.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\libs\glfw\include\GLFW;..\libs\gl3w;..\libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\libs\glfw\include\GLFW;..\libs\gl3w;..\libs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>

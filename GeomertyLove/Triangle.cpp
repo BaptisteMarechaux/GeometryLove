@@ -1,11 +1,28 @@
 #include "Triangle.h"
 
-Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) {}
-Triangle::Triangle() : p1(Point()), p2(Point()), p3(Point()) {}
+Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) 
+{
+	p1 = p1;
+	p2 = p2;
+	p3 = p3;
+
+	e1 = Edge(p1, p2);
+	e2 = Edge(p2, p3);
+	e3 = Edge(p3, p1);
+}
+
+Triangle::Triangle() : p1(Point()), p2(Point()), p3(Point()), e1(Edge()), e2(Edge()), e3(Edge()) {}
 
 std::ostream& operator<<(std::ostream& os, const Triangle &triangle)
 {
-	return os << "Point 1 : " << triangle.p1 << "Point 2 : " << triangle.p2 << "Point 3" << triangle.p3 << std::endl;
+	return os << "Triangle : " << "Point 1 : " << triangle.p1 << " Point 2 : " << triangle.p2 << " Point 3" << triangle.p3 << std::endl;
+}
+
+bool Triangle::operator == (const Triangle &triangle) const
+{
+	return	(p1 == triangle.p1 || p1 == triangle.p2 || p1 == triangle.p3) &&
+		(p2 == triangle.p1 || p2 == triangle.p2 || p2 == triangle.p3) &&
+		(p3 == triangle.p1 || p3 == triangle.p2 || p3 == triangle.p3);
 }
 
 bool Triangle::circumCircleContains(const Point &v)
@@ -20,4 +37,9 @@ bool Triangle::circumCircleContains(const Point &v)
 
 	float dist = sqrtf(((v.x - circum_x) * (v.x - circum_x)) + ((v.y - circum_y) * (v.y - circum_y)));
 	return dist <= circum_radius;
+}
+
+bool Triangle::containsPoint(const Point &point)
+{
+	return p1 == point || p2 == point || p3 == point;
 }

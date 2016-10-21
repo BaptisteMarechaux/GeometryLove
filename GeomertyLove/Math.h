@@ -1,16 +1,26 @@
 #include "Point.h"
 #include "Triangle.h"
 #include <vector>
+#include "glm.hpp"
+
+struct Triangulation
+{
+	std::vector<Point> sommets;
+	std::vector<Edge> aretes;
+	std::vector<Triangle> triangle;
+};
 
 int orientation(Point p, Point q, Point r);
 std::vector<Point> jarvisMarch(std::vector<Point> points);
-Point makeVector(Point p1, Point p2); 
-int normVector(Point p1, Point p2);
-int normVector(Point vector);
-int dotProduct(Point p1, Point p2);
-double angle(Point vector, Point p1, Point p2);
+glm::vec2 makeVector(Point p1, Point p2);
+int normVector(Point a, Point b);
+int normVector(glm::vec2 vector);
+double dotProduct(glm::vec2 vecA, glm::vec2 vecB);
+double angle(glm::vec2 vector, Point p1, Point p2);
 
 std::vector<Point> grahamScan(std::vector<Point> points);
 std::vector<Point> divideAndConquer(std::vector<Point> points);
 Point barycenter(std::vector<Point> points);
-std::vector<Triangle> triangulation(std::vector<Point> points);
+std::vector<Edge> add_triangulation(Triangulation &T, Point point);
+
+void select_close(float x, float y, int& select, const std::vector<Point> &points);

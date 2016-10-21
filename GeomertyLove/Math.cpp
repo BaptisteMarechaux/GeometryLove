@@ -1,6 +1,12 @@
 #include "Math.h"
-#include <math.h>
+
 #include <algorithm>
+#include "Edge.h"
+#include <iterator>
+
+
+#define _USE_MATH_DEFINES
+#include <math.h>
 
 int orientation(Point p, Point q, Point r)
 {
@@ -11,39 +17,52 @@ int orientation(Point p, Point q, Point r)
 	return (val > 0) ? 1 : 2; // clock or counterclock wise
 }
 
-Point makeVector(Point p1, Point p2)
+glm::vec2 makeVector(Point p1, Point p2)
 {
 	int x = p2.x - p1.x;
 	int y = p2.y - p1.y;
-	return Point(x, y);
+	return glm::vec2(x, y);
 }
 
-int normVector(Point p1, Point p2)
+int normVector(Point a, Point b)
 {
-	int x = pow(p2.x - p1.x, 2);
-	int y = pow(p2.y - p1.y , 2);
+	int x = pow(b.x - a.x, 2);
+	int y = pow(b.y - a.y , 2);
 	return sqrt(x + y);
 }
 
-int normVector(Point vector)
+int normVector(glm::vec2 vector)
 {
 	int x = pow(vector.x, 2);
 	int y = pow(vector.y, 2);
 	return sqrt(x + y);
 }
 
-int dotProduct(Point p1, Point p2)
+double dotProduct(glm::vec2 vecA, glm::vec2 vecB)
 {
-	return (p1.x * p2.x) + (p1.y * p2.y);
+	//return normVector(vecA) * normVector(vecB) * glm::cos (vecA, vecB);
+	//return (p1.x * p2.x) + (p1.y * p2.y);
+	return glm::dot(vecA, vecB);
 }
 
-double angle(Point vector, Point p1, Point p2)
+double angle(glm::vec2 vector, Point p1, Point p2)
 {
-	Point vectorPoint = makeVector(p1, p2);
+	glm::vec2 vectorPoint = makeVector(p1, p2);
 	int norm_vector_points = normVector(p1, p2);
 	int norm_vector = normVector(vector);
 
-	return acos(dotProduct(vectorPoint, vector) / (norm_vector_points * norm_vector));
+	double dot = dotProduct(vectorPoint, vector);
+
+	int determinant = vectorPoint.x * vector.y - vectorPoint.y * vector.x;
+	double result = dot / (norm_vector_points * norm_vector);
+
+	if (result < -1.0) result = -1.0;
+	else if (result > 1.0) result = 1.0;
+	double angle = acos(result);
+
+	if (determinant == 0) // colinear
+		return INFINITY;
+	return angle * 180 / M_PI;
 }
 
 std::vector<Point> jarvisMarch(std::vector<Point> points)
@@ -59,22 +78,55 @@ std::vector<Point> jarvisMarch(std::vector<Point> points)
 			l = i;
 	int current_index = l, next_index;
 
-	//do while not return to start point
+	int first_index = l;
+	int i = first_index;
+	int j = -1, inew = -1;
+
+	glm::vec2 vectorDirector = makeVector(Point(0,0) , Point(0, 1));
 	do
 	{
-		hull.push_back(points[current_index]);
-		next_index = (current_index + 1) % n;
-		for (int i = 0; i < n; i++)
+		hull.push_back(points[i]);
+		if (hull.size() > points.size())
 		{
-			//counterclockwise
-			if (orientation(points[current_index], points[i], points[next_index]) == 2)
-				next_index = i;
+			std::cout << "ERROR stop function !" << std::endl;
+			return hull;
 		}
-		current_index = next_index;
+		if (i == 0)
+			j = 1;
+		else
+			j = 0;
 
-	} while (current_index != l); 
+		double angle_min = angle(vectorDirector, points[i], points[j]);
+		int lmax = normVector(points[i], points[j]);
+		inew = j;
+
+		std::cout << "angle_min " <<  angle_min << std::endl;
+		//std::cout << "norm " << lmax << std::endl;
+
+		for (j = inew + 1; j < n; j++)
+		{
+			if (j != i)
+			{
+				double current_angle = angle(vectorDirector, points[i], points[j]);
+				if (angle_min > current_angle || (current_angle == angle_min && lmax < normVector(points[i], points[j])))
+				{
+					angle_min = current_angle;
+					lmax = normVector(points[i], points[j]);
+					inew = j;
+				}
+			}
+		}
+		vectorDirector = makeVector(points[i], points[inew]);
+		i = inew;
+		
+	} while (i != first_index);
+
+
+	std::cout << hull.size() << std::endl;
+	std::cout << points.size() << std::endl;
 	return hull;
 }
+
 
 std::vector<Point> grahamScan(std::vector<Point> points)
 {
@@ -137,15 +189,137 @@ Point barycenter(std::vector<Point> points)
 	return finalPoint;
 }
 
-std::vector<Triangle> triangulation(std::vector<Point> points)
+std::vector<Edge> add_triangulation(Triangulation &T, Point point)
 {
-	std::vector<Point> sortPoints = points;
-	std::vector<Triangle> result;
+	std::vector<Triangle> _triangles;
+	std::vector<Edge> _edges;
 
-	std::sort(sortPoints.begin(), sortPoints.end());
 
-	for (int i = 0; i < sortPoints.size(); i++)
-		std::cout << sortPoints[i] << std::endl;
+	if (T.triangle.size() == 0)
+	{
+		if (T.sommets.size() == 0)
+			T.sommets.push_back(point);
 
-	return result;
+		else if (T.sommets.size() == 1)
+		{
+			T.sommets.push_back(point);
+			T.aretes.push_back(Edge(T.sommets[0], point));
+		}
+		else
+		{
+			bool colineaire = false;
+			for (int i = 0; i < T.sommets.size(); i++)
+			{
+				glm::vec2 vectorA = makeVector(T.sommets[i], point);
+				glm::vec2 vectorB = makeVector(T.sommets[i], T.sommets[i + 1]);
+				
+				if (vectorA.x * vectorB.y != vectorA.y * vectorB.x)
+				{
+					std::cout << "Pas colineaires" << std::endl;
+					colineaire = false;
+					break;
+				}
+				/*if (vectorA.x * vectorB.y == vectorA.y * vectorB.x)
+				{
+					std::cout << "Colineaires" << std::endl;
+					std::cout << normVector(vectorA) << std::endl;
+					std::cout << normVector(vectorB) << std::endl;
+
+					if (dotProduct(vectorA, vectorB) < 0)
+					{
+						std::cout << "begin" << std::endl;
+						T.aretes.push_back(Edge(point, T.sommets[i]));
+					}
+					else
+					{
+						if (normVector(vectorA) > normVector(vectorB))
+						{
+							std::cout << "end" << std::endl;
+							T.aretes.push_back(Edge(T.sommets[i + 1], point));
+						}
+						else
+						{
+							std::cout << "between" << std::endl;
+							T.aretes[0] = Edge(T.sommets[i], point);
+							T.aretes.push_back(Edge(point, T.sommets[i + 1]));
+						}
+					}*/
+
+				}
+				if (colineaire)
+				{
+				}
+				else
+				{
+					std::vector<Edge> listeAreteTemp;
+					for (int i = 0; i < T.sommets.size(); i++)
+					{
+						listeAreteTemp.push_back(Edge(T.sommets[i], point));
+					}
+					T.sommets.push_back(point);
+				}
+				
+			}
+			
+		}
+	return _edges;
+}
+	
+	//if (points.size() < 3)
+	//	return _edges;
+	//
+	//std::vector<Point> sortPoints = points;
+	//std::sort(sortPoints.begin(), sortPoints.end());
+	//
+	//for (int i = 0; i < sortPoints.size(); i++)
+	//	std::cout << sortPoints[i] << std::endl;
+
+
+	
+
+
+/*std::vector<Edge> subsets;
+Triangle triangle = Triangle();
+for (int i = 0; i < sortPoints.size(); i++)
+{
+if (sortPoints.size() % 2 != 0 && i + 3 == sortPoints.size())
+{
+triangle = Triangle(sortPoints[i], sortPoints[i + 1], sortPoints[i + 2]);
+break;
+}
+else
+{
+subsets.push_back(Edge(sortPoints[i], sortPoints[i + 1]));
+i++;
+}
+}
+
+if (sortPoints.size() % 2 == 0)
+{
+for (int i = 0; i < subsets.size(); i++)
+std::cout << "Subset " << i << " " << subsets[i] << std::endl;
+}
+else
+{
+for (int i = 0; i < subsets.size(); i++)
+std::cout << "Subset " << i << " " << subsets[i] << std::endl;
+std::cout << triangle << std::endl;
+}*/
+
+void select_close(float x, float y, int& select, const std::vector<Point> &points)
+{
+	double prevNorm = sqrt(pow(points[0].x - x, 2) + pow(points[0].y - y, 2));
+	select = 0;
+
+	for (unsigned int i = 0; i < points.size(); i++)
+	{
+		double norm = sqrt(pow(points[i].x - x, 2) + pow(points[i].y - y, 2));
+		if (norm < prevNorm)
+		{
+			prevNorm = norm;
+			select = i;
+		}
+	}
+	if (prevNorm > sqrt(25))
+		select = -1;
 }
