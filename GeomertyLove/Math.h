@@ -21,6 +21,9 @@ double angle(glm::vec2 vector, Point p1, Point p2);
 std::vector<Point> grahamScan(std::vector<Point> points);
 std::vector<Point> divideAndConquer(std::vector<Point> points);
 Point barycenter(std::vector<Point> points);
+
 std::vector<Edge> add_triangulation(Triangulation &T, Point point);
+std::vector<Point> findAndSuppressConcavePoints(std::vector<Point> points);
+bool isConvexPoint(Point p, Point prevPoint, Point nextPoint);
 
 void select_close(float x, float y, int& select, const std::vector<Point> &points);

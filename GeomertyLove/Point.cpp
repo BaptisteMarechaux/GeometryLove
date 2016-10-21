@@ -15,10 +15,12 @@ bool Point::operator<(const Point& point) const
 	return false;
 }
 
-bool Point::operator == (const Point &point) const
+bool Point::operator==(const Point & point) const
 {
-	if (x == point.x && y == point.y)
-		return true;
-	else
-		return false;
+	return (x == point.x || y == point.y);
+}
+
+bool Point::operator!=(const Point & point) const
+{
+	return (x != point.x || y != point.y);
 }

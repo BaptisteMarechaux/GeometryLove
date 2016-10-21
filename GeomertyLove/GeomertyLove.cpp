@@ -104,12 +104,19 @@ void Render()
 		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
 		glBindVertexArray(0);
 	}
+	//triangulation display
 	//if (edges.size() > 0)
 	//{
 	//	glBindVertexArray(vaoDelaunay);
 	//	glDrawArrays(GL_LINES, 0, edges.size());
 	//	glBindVertexArray(0);
 	//}
+	else if (hull.size() > 0 && grahamScan)
+	{
+		glBindVertexArray(vaoHull);
+		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
+		glBindVertexArray(0);
+	}
 }
 
 void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
