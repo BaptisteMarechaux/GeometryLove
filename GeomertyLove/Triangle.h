@@ -6,6 +6,7 @@
 #include "Point.h"
 #include <vector>
 #include "Edge.h"
+#include "glm.hpp"
 
 class Triangle
 {
@@ -14,6 +15,8 @@ class Triangle
 	public:
 		Edge e1, e2, e3;
 		Point p1, p2, p3;
+		glm::vec2 n1, n2, n3;
+
 		Triangle(Point p1, Point p2, Point p3);
 		Triangle();
 		friend std::ostream& operator<<(std::ostream& os, const Triangle &triangle);

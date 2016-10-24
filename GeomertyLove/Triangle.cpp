@@ -10,6 +10,40 @@ Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3)
 	e1 = Edge(p1, p2);
 	e2 = Edge(p2, p3);
 	e3 = Edge(p3, p1);
+
+	glm::vec2 nTemp1, nTemp2;
+
+	glm::vec2 vector = makeVector(p1, p2);
+	nTemp1 = glm::vec2(-vector.y, vector.x);
+	nTemp2 = glm::vec2(vector.y, -vector.x);
+	
+	if (dotProduct(nTemp1, makeVector(p1, p3)))
+		n1 = nTemp1;
+	else
+		n1 = nTemp2;
+
+	vector = makeVector(p2, p3);
+	nTemp1 = glm::vec2(-vector.y, vector.x);
+	nTemp2 = glm::vec2(vector.y, -vector.x);
+
+	if (dotProduct(nTemp1, makeVector(p2, p1)))
+		n2 = nTemp1;
+	else
+		n2 = nTemp2;
+
+
+	vector = makeVector(p3, p1);
+	nTemp1 = glm::vec2(-vector.y, vector.x);
+	nTemp2 = glm::vec2(vector.y, -vector.x);
+
+	if (dotProduct(nTemp1, makeVector(p3, p2)))
+		n3 = nTemp1;
+	else
+		n3 = nTemp2;
+
+	std::cout << n1.x << " " << n1.y << std::endl;
+	std::cout << n2.x << " " << n2.y << std::endl;
+	std::cout << n3.x << " " << n3.y << std::endl;
 }
 
 Triangle::Triangle() : p1(Point()), p2(Point()), p3(Point()), e1(Edge()), e2(Edge()), e3(Edge()) {}
