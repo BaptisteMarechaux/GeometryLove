@@ -11,39 +11,33 @@ Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3)
 	e2 = Edge(p2, p3);
 	e3 = Edge(p3, p1);
 
-	glm::vec2 nTemp1, nTemp2;
 
-	glm::vec2 vector = makeVector(p1, p2);
-	nTemp1 = glm::vec2(-vector.y, vector.x);
-	nTemp2 = glm::vec2(vector.y, -vector.x);
-	
-	if (dotProduct(nTemp1, makeVector(p1, p3)))
-		n1 = nTemp1;
+	if (isClockwise())
+	{
+		glm::vec2 vector = makeVector(p1, p2);
+		n1 = glm::vec2(vector.y, -vector.x);
+
+		vector = makeVector(p2, p3);
+		n2 = glm::vec2(vector.y, -vector.x);
+
+		vector = makeVector(p3, p1);
+		n3 = glm::vec2(vector.y, -vector.x);
+	}
 	else
-		n1 = nTemp2;
+	{
+		glm::vec2 vector = makeVector(p1, p2);
+		n1 = glm::vec2(-vector.y, vector.x);
 
-	vector = makeVector(p2, p3);
-	nTemp1 = glm::vec2(-vector.y, vector.x);
-	nTemp2 = glm::vec2(vector.y, -vector.x);
+		vector = makeVector(p2, p3);
+		n2 = glm::vec2(-vector.y, vector.x);
 
-	if (dotProduct(nTemp1, makeVector(p2, p1)))
-		n2 = nTemp1;
-	else
-		n2 = nTemp2;
+		vector = makeVector(p3, p1);
+		n3 = glm::vec2(-vector.y, vector.x);
+	}
 
-
-	vector = makeVector(p3, p1);
-	nTemp1 = glm::vec2(-vector.y, vector.x);
-	nTemp2 = glm::vec2(vector.y, -vector.x);
-
-	if (dotProduct(nTemp1, makeVector(p3, p2)))
-		n3 = nTemp1;
-	else
-		n3 = nTemp2;
-
-	std::cout << n1.x << " " << n1.y << std::endl;
-	std::cout << n2.x << " " << n2.y << std::endl;
-	std::cout << n3.x << " " << n3.y << std::endl;
+	//std::cout << n1.x << " " << n1.y << std::endl;
+	//std::cout << n2.x << " " << n2.y << std::endl;
+	//std::cout << n3.x << " " << n3.y << std::endl;
 }
 
 Triangle::Triangle() : p1(Point()), p2(Point()), p3(Point()), e1(Edge()), e2(Edge()), e3(Edge()) {}
@@ -76,11 +70,23 @@ bool Triangle::circumCircleContains(const Point &v)
 
 bool Triangle::containsPoint(const Point &point)
 {
-	bool b1, b2, b3;
+	if (dotProduct(makeVector(p1, point), n1) < 0.0f)
+		return false;
+	if (dotProduct(makeVector(p2, point), n2) < 0.0f)
+		return false;
+	if (dotProduct(makeVector(p3, point), n3) < 0.0f)
+		return false;
+	return true;
+}
 
-	b1 = sign(point, p1, p2) < 0.0f;
-	b2 = sign(point, p2, p3) < 0.0f;
-	b3 = sign(point, p3, p1) < 0.0f;
+bool Triangle::isClockwise()
+{
+	float val1 = (p2.x - p1.x) * (p2.y + p1.y);
+	float val2 = (p3.x - p2.x) * (p3.y + p2.y);
+	float val3 = (p1.x - p3.x) * (p1.y + p3.y);
 
-	return ((b1 == b2) && (b2 == b3));
+	if (val1 + val2 + val3 > 0)
+		return true;
+	else
+		return false;
 }

@@ -23,6 +23,7 @@ class Triangle
 		bool operator == (const Triangle &triangle) const;
 		bool circumCircleContains(const Point &v);
 		bool containsPoint(const Point &point);
+		bool isClockwise();
 };
 
 #endif
