@@ -179,6 +179,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Triangle.h" />
+    <ClInclude Include="Triangulation.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\common\ShaderManager.cpp" />
@@ -196,6 +197,7 @@
     <ClCompile Include="Point.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="Triangle.cpp" />
+    <ClCompile Include="Triangulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\shaders\simple.fs" />

@@ -19,8 +19,6 @@ std::vector<Point> hull;
 std::vector<Edge> edges;
 
 
-Triangulation T;
-
 GLFWwindow* window;
 GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay;
 GLuint mvp_location, position_location, color_location, program;
