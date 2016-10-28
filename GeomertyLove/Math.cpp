@@ -65,6 +65,22 @@ double angle(glm::vec2 vector, Point p1, Point p2)
 	return angle * 180 / M_PI;
 }
 
+int isOnLine(Point &p1, Point &p2, Point &pointToCheck)
+{
+	float dot1 = dotProduct(makeVector(p1, p2), makeVector(p1, pointToCheck));
+	float dot2 = dotProduct(makeVector(p1, p2), makeVector(p1, p2));
+
+	if (dot1 < 0 || dot1 > dot2)
+		return 0;
+	else if (dot1 == 0)
+		return 2;
+	else if (dot1 == dot2)
+		return 2;
+	else if (dot1 > 0 && dot1 < dot2)
+		return 1;
+}
+
+
 std::vector<Point> jarvisMarch(std::vector<Point> points)
 {
 	int n = points.size();

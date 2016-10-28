@@ -10,6 +10,7 @@ int normVector(Point a, Point b);
 int normVector(glm::vec2 vector);
 double dotProduct(glm::vec2 vecA, glm::vec2 vecB);
 double angle(glm::vec2 vector, Point p1, Point p2);
+int isOnLine(Point &p1, Point &p2, Point &pointToCheck);
 
 std::vector<Point> grahamScan(std::vector<Point> points);
 std::vector<Point> divideAndConquer(std::vector<Point> points);
