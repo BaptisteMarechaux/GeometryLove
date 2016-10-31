@@ -6,11 +6,14 @@
 #include <iostream>
 #include <ostream>
 
+//class Edge;
+
 class Point
 {
 	public:
 		float x;
 		float y;
+		//Edge *e;
 		Point(float x, float y);
 		Point();
 
