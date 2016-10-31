@@ -9,9 +9,11 @@ class Triangulation
 		std::vector<Point> sommets;
 		std::vector<Edge> aretes;
 		std::vector<Triangle> triangles;
+		bool checkVisibilityEdge(Edge &edge, Point &point);
 	public:
 		Triangulation();
-		void Add(Point point);
-		void Delete(Point point);
+		void Add(Point2D point2D);
+		void Delete(Point2D point2D);
+		std::vector<Edge> GetAretes();
 };
 

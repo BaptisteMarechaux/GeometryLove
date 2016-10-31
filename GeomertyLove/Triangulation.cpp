@@ -5,11 +5,18 @@ Triangulation::Triangulation()
 {
 }
 
-void Triangulation::Add(Point point)
+std::vector<Edge> Triangulation::GetAretes()
+{
+	return aretes;
+}
+
+void Triangulation::Add(Point2D point2D)
 {
 	std::vector<Triangle> _triangles;
 	std::vector<Edge> _edges;
 
+
+	Point point = (Point)point2D;
 	//Cas A (T ne contient pas de triangles)
 	if (triangles.size() == 0)
 	{
@@ -27,7 +34,7 @@ void Triangulation::Add(Point point)
 			//parcours de tout les sommets / si pas colineaire break
 			for (int i = 0; i < sommets.size() - 1; i++)
 			{
-				glm::vec2 vectorA = makeVector(sommets[i], point);
+				glm::vec2 vectorA = makeVector(sommets[i], (Point)point);
 				glm::vec2 vectorB = makeVector(sommets[i], sommets[i + 1]);
 
 				if (vectorA.x * vectorB.y != vectorA.y * vectorB.x)
@@ -120,7 +127,7 @@ void Triangulation::Add(Point point)
 				{
 					Edge newEdge = Edge(sommets[i], point);
 					listeAreteTemp.push_back(newEdge);
-					//T.sommets[i].e = newEdge;
+					sommets[i].e = new Edge(sommets[i], point);
 				}
 
 				for (int i = 0; i < aretes.size(); i++)
@@ -128,6 +135,7 @@ void Triangulation::Add(Point point)
 					Point s1 = aretes[i].p1;
 					Point s2 = aretes[i].p2;
 
+					//aretes[i].t1 = new Triangle(s1, s2, point);
 					triangles.push_back(Triangle(s1, s2, point));
 				}
 
@@ -165,13 +173,65 @@ void Triangulation::Add(Point point)
 		//Cas B1-2
 		else
 		{
-
+			for (int i = 0; i < triangles.size(); i++)
+			{
+				if (checkVisibilityEdge(triangles[i].e1, point))
+					listeAreteTemp.push_back(triangles[i].e1);
+				if (checkVisibilityEdge(triangles[i].e2, point))
+					listeAreteTemp.push_back(triangles[i].e2);
+				if (checkVisibilityEdge(triangles[i].e3, point))
+					listeAreteTemp.push_back(triangles[i].e3);
+			}
+			std::cout << "aretes vues " << listeAreteTemp.size() << std::endl;
 		}
+
+		//Cas B2
+		int i = 0;
+		while (listeAreteTemp.size() != 0)
+		{
+			listeAreteTemp.erase(listeAreteTemp.begin());
+			if (listeAreteTemp[i].t1 || listeAreteTemp[i].t2)
+			{
+
+			}
+
+			i++;
+		}
+	}
+
+	//marquage des triangles d'incidence
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		Triangle *triangle = new Triangle(triangles[i]);
+		if (triangles[i].e1.t1 == NULL)
+			triangles[i].e1.t1 = triangle;
+		else if (triangles[i].e1.t2 == NULL && triangles[i].e1.t1 != triangle)
+			triangles[i].e1.t2 = triangle;
+
+		if (triangles[i].e2.t1 == NULL)
+			triangles[i].e2.t1 = triangle;
+		else if (triangles[i].e2.t2 == NULL && triangles[i].e1.t1 != triangle)
+			triangles[i].e2.t2 = triangle;
+
+		if (triangles[i].e3.t1 == NULL)
+			triangles[i].e3.t1 = triangle;
+		else if (triangles[i].e3.t2 == NULL && triangles[i].e1.t1 != triangle)
+			triangles[i].e3.t2 = triangle;
 	}
 	//return _edges;
 }
 
-void Delete(Point point)
+void Delete(Point point2D)
 {
 
+}
+
+bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
+{
+	if ((edge.t1 == NULL && edge.t2 != NULL) || (edge.t1 != NULL && edge.t2 == NULL))
+	{
+		if (dotProduct(edge.n, makeVector(edge.p1, point)) < 0)
+			return true;
+	}
+	return false;
 }

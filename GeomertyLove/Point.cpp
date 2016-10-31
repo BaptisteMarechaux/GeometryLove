@@ -1,8 +1,12 @@
 #include "Point.h"
 
-
 Point::Point(float x, float y) : x(x), y(y){}
-Point::Point() : x(0), y(0) {}
+Point::Point() : x(0), y(0){}
+Point::Point(const Point2D& point)
+{
+	x = point.x;
+	y = point.y;
+}
 
 std::ostream& operator<<(std::ostream& os, const Point &point)
 {

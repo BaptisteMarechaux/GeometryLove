@@ -1,7 +1,7 @@
 #include "Edge.h"
 
-Edge::Edge(Point p1, Point p2) : p1(p1), p2(p2) {}
-Edge::Edge() : p1(Point()), p2(Point()) {}
+Edge::Edge(Point p1, Point p2) : p1(p1), p2(p2), t1(NULL), t2(NULL) {}
+Edge::Edge() : p1(Point()), p2(Point()), t1(NULL), t2(NULL) {}
 
 std::ostream& operator<<(std::ostream& os, const Edge &edge)
 {

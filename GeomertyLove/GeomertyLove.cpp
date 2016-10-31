@@ -13,11 +13,19 @@
 #include "gtc\matrix_transform.hpp"
 #include "gtc\type_ptr.hpp"
 #include "Math.h"
+#include "Triangulation.h"
 
-std::vector<Point> points;
-std::vector<Point> hull;
-std::vector<Edge> edges;
+struct Line
+{
+	float x1, y1;
+	float x2, y2;
+};
 
+std::vector<Point2D> points;
+std::vector<Point2D> hull;
+std::vector<Line> edges;
+
+Triangulation T;
 
 GLFWwindow* window;
 GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay;
@@ -105,10 +113,12 @@ void Render()
 	//triangulation display
 	//if (edges.size() > 0)
 	//{
+	//	std::cout << edges.size() << std::endl;
 	//	glBindVertexArray(vaoDelaunay);
 	//	glDrawArrays(GL_LINES, 0, edges.size());
 	//	glBindVertexArray(0);
 	//}
+
 	else if (hull.size() > 0 && grahamScan)
 	{
 		glBindVertexArray(vaoHull);
@@ -124,7 +134,7 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && drawPoints && ImGui::IsMouseHoveringAnyWindow() == 0)
 	{
 		std::cout << "Point " << x << " " << y << std::endl;
-		Point point(x, y);
+		Point2D point(x, y);
 		points.push_back(point);
 
 		glBindVertexArray(vaoPoints);
@@ -138,12 +148,21 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
 		glBindVertexArray(0);
 
-		//add_triangulation(T, point);
-		//edges = triangulation(points);
-		//glBindVertexArray(vaoDelaunay);
-		//glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-		//glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(Point), edges.data(), GL_STATIC_DRAW);
-		//glBindVertexArray(0);
+		T.Add(point);
+		std::vector<Edge> edges_temp = T.GetAretes();
+		for (int i = 0; i < edges_temp.size(); i++)
+		{
+			Line line;
+			line.x1 = edges_temp[i].p1.x;
+			line.y1 = edges_temp[i].p1.y;
+			line.x2 = edges_temp[i].p2.x;
+			line.y2 = edges_temp[i].p2.y;
+			edges.push_back(line);
+		}
+		glBindVertexArray(vaoDelaunay);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
+		glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(Point), edges.data(), GL_STATIC_DRAW);
+		glBindVertexArray(0);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -318,14 +337,14 @@ void Initialize()
 
 	glBindVertexArray(0);
 
-	//glGenVertexArrays(1, &vaoDelaunay);
-	//glBindVertexArray(vaoDelaunay);
-	//
-	//glGenBuffers(1, &vertexBufferDelaunay);
-	//glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-	//glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point), edges.data(), GL_STATIC_DRAW);
-	//glEnableVertexAttribArray(position_location);
-	//glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
-	//
-	//glBindVertexArray(0);
+	glGenVertexArrays(1, &vaoDelaunay);
+	glBindVertexArray(vaoDelaunay);
+	
+	glGenBuffers(1, &vertexBufferDelaunay);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
+	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point), edges.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(position_location);
+	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
+	
+	glBindVertexArray(0);
 }

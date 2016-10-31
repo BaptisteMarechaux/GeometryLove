@@ -17,14 +17,16 @@ int orientation(Point p, Point q, Point r)
 	return (val > 0) ? 1 : 2; // clock or counterclock wise
 }
 
-glm::vec2 makeVector(Point p1, Point p2)
+template <class TPoint>
+glm::vec2 makeVector(TPoint p1, TPoint p2)
 {
 	int x = p2.x - p1.x;
 	int y = p2.y - p1.y;
 	return glm::vec2(x, y);
 }
 
-int normVector(Point a, Point b)
+template <class TPoint>
+int normVector(TPoint a, TPoint b)
 {
 	int x = pow(b.x - a.x, 2);
 	int y = pow(b.y - a.y , 2);
@@ -45,7 +47,8 @@ double dotProduct(glm::vec2 vecA, glm::vec2 vecB)
 	return glm::dot(vecA, vecB);
 }
 
-double angle(glm::vec2 vector, Point p1, Point p2)
+template <class TPoint>
+double angle(glm::vec2 vector, TPoint p1, TPoint p2)
 {
 	glm::vec2 vectorPoint = makeVector(p1, p2);
 	int norm_vector_points = normVector(p1, p2);
@@ -81,10 +84,10 @@ int isOnLine(Point &p1, Point &p2, Point &pointToCheck)
 }
 
 
-std::vector<Point> jarvisMarch(std::vector<Point> points)
+std::vector<Point2D> jarvisMarch(std::vector<Point2D> points)
 {
 	int n = points.size();
-	std::vector<Point> hull;
+	std::vector<Point2D> hull;
 	if (n < 3) return hull;
 
 	//find start point - abs min / ord min
@@ -237,7 +240,7 @@ std::cout << "Subset " << i << " " << subsets[i] << std::endl;
 std::cout << triangle << std::endl;
 }*/
 
-void select_close(float x, float y, int& select, const std::vector<Point> &points)
+void select_close(float x, float y, int& select, const std::vector<Point2D> &points)
 {
 	double prevNorm = sqrt(pow(points[0].x - x, 2) + pow(points[0].y - y, 2));
 	select = 0;

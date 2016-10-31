@@ -16,23 +16,29 @@ Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3)
 	{
 		glm::vec2 vector = makeVector(p1, p2);
 		n1 = glm::vec2(vector.y, -vector.x);
+		e1.n = n1;
 
 		vector = makeVector(p2, p3);
 		n2 = glm::vec2(vector.y, -vector.x);
+		e2.n = n2;
 
 		vector = makeVector(p3, p1);
 		n3 = glm::vec2(vector.y, -vector.x);
+		e3.n = n3;
 	}
 	else
 	{
 		glm::vec2 vector = makeVector(p1, p2);
 		n1 = glm::vec2(-vector.y, vector.x);
+		e1.n = n1;
 
 		vector = makeVector(p2, p3);
 		n2 = glm::vec2(-vector.y, vector.x);
+		e2.n = n2;
 
 		vector = makeVector(p3, p1);
 		n3 = glm::vec2(-vector.y, vector.x);
+		e3.n = n3;
 	}
 
 	//std::cout << n1.x << " " << n1.y << std::endl;
