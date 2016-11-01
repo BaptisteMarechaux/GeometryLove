@@ -186,16 +186,53 @@ void Triangulation::Add(Point2D point2D)
 		}
 
 		//Cas B2
-		int i = 0;
-		while (listeAreteTemp.size() != 0)
+		int j = 0;
+		while (listeAreteTemp.size() > 1)
 		{
-			listeAreteTemp.erase(listeAreteTemp.begin());
-			if (listeAreteTemp[i].t1 || listeAreteTemp[i].t2)
+			Edge testEdge = listeAreteTemp[j];
+			if (testEdge.t1 || testEdge.t2)
 			{
+				int triangleToRemove = -1;
+				if (testEdge.t1 != NULL && testEdge.t1->circumCircleContains(point))
+				{
+					for (int i = 0; i < triangles.size(); i++)
+					{
+						if (triangles[i] == *testEdge.t1)
+							triangleToRemove = i;
+					}
+				}
+				else if (testEdge.t2 != NULL && testEdge.t2->circumCircleContains(point))
+				{
+					for (int i = 0; i < triangles.size(); i++)
+					{
+						if (triangles[i] == *testEdge.t2)
+							triangleToRemove = i;
+					}
+				}
+				for (int i = 0; i < aretes.size(); i++)
+				{
+					if (aretes[i] == testEdge)
+						aretes.erase(aretes.begin() + i);
+				}
 
+				if (triangleToRemove != -1)
+				{
+					listeAreteTemp.push_back(triangles[triangleToRemove].e2);
+					listeAreteTemp.push_back(triangles[triangleToRemove].e3);
+
+					triangles.erase(triangles.begin() + triangleToRemove);
+				}
 			}
+			else
+			{
+				aretes.push_back(Edge(testEdge.p1, point));
+				aretes.push_back(Edge(testEdge.p2, point));
 
-			i++;
+				triangles.push_back(Triangle(testEdge.p1, testEdge.p2, point));
+				//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
+			}
+			listeAreteTemp.erase(listeAreteTemp.begin());
+			j++;
 		}
 	}
 
