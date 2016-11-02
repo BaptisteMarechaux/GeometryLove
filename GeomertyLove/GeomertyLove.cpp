@@ -23,7 +23,7 @@ struct Line
 
 std::vector<Point2D> points;
 std::vector<Point2D> hull;
-std::vector<Line> edges;
+std::vector<Point2D> triangulation2D;
 
 Triangulation T;
 
@@ -42,10 +42,11 @@ float last_movex, last_movey;
 int _selectMovePoint = 0;
 
 static bool drawPoints = true;
-static bool jarvisMarchEnable = true;
+static bool jarvisMarchEnabled = false;
 static bool grahamScanEnabled = false;
-static bool movePointEnabled = false;
 static bool divideAndConquerEnabled = false;
+static bool triangulationEnabled = true;
+static bool movePointEnabled = false;
 
 void Initialize();
 
@@ -66,27 +67,6 @@ void Render()
 	glUniformMatrix4fv(mvp_location, 1, GL_FALSE, glm::value_ptr(mvp));
 	glPointSize(10.0f);
 
-	//Modes de sélection d'enveloppe convexe
-	//On ne peut choisir qu'un seul de ces modes à la fois
-	if (jarvisMarchEnable)
-	{
-		grahamScanEnabled = false;
-		divideAndConquerEnabled = false;
-	}
-	else if (grahamScanEnabled)
-	{
-		jarvisMarchEnable = false;
-		divideAndConquerEnabled = false;
-	}
-	else if (divideAndConquerEnabled)
-	{
-		jarvisMarchEnable = false;
-		grahamScanEnabled = false;
-	}
-
-
-	if (drawPoints)
-		movePointEnabled = false;
 	if (movePointEnabled)
 	{
 		drawPoints = false;
@@ -104,22 +84,21 @@ void Render()
 		glBindVertexArray(0);
 	}
 
-	if (hull.size() > 0 && jarvisMarchEnable)
+	if (hull.size() > 0 && jarvisMarchEnabled)
 	{
 		glBindVertexArray(vaoHull);
 		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
 		glBindVertexArray(0);
 	}
 	//triangulation display
-	//if (edges.size() > 0)
-	//{
-	//	std::cout << edges.size() << std::endl;
-	//	glBindVertexArray(vaoDelaunay);
-	//	glDrawArrays(GL_LINES, 0, edges.size());
-	//	glBindVertexArray(0);
-	//}
+	if (triangulation2D.size() > 0 && triangulationEnabled)
+	{
+		glBindVertexArray(vaoDelaunay);
+		glDrawArrays(GL_LINE_LOOP, 0, triangulation2D.size());
+		glBindVertexArray(0);
+	}
 
-	else if (hull.size() > 0 && grahamScan)
+	else if (hull.size() > 0 && grahamScanEnabled)
 	{
 		glBindVertexArray(vaoHull);
 		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
@@ -150,18 +129,22 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 
 		T.Add(point);
 		std::vector<Edge> edges_temp = T.GetAretes();
+		triangulation2D.empty();
 		for (int i = 0; i < edges_temp.size(); i++)
 		{
-			Line line;
-			line.x1 = edges_temp[i].p1.x;
-			line.y1 = edges_temp[i].p1.y;
-			line.x2 = edges_temp[i].p2.x;
-			line.y2 = edges_temp[i].p2.y;
-			edges.push_back(line);
+			triangulation2D.push_back(Point2D(edges_temp[i].p1.x, edges_temp[i].p1.y));
+			triangulation2D.push_back(Point2D(edges_temp[i].p2.x, edges_temp[i].p2.y));
 		}
+
+		std::cout << std::endl;
+		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
+		std::cout << "Sommets " << T.GetSommets().size() << std::endl;
+		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
+		std::cout << std::endl;
+
 		glBindVertexArray(vaoDelaunay);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-		glBufferData(GL_ARRAY_BUFFER, edges.size() * sizeof(Point), edges.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 		glBindVertexArray(0);
 	}
 
@@ -218,15 +201,44 @@ int main(int, char**)
 
 		ImGui::Begin("Convex Hull & Voronoi");
 		ImGui::Text("This window is here to use the application!");
-		ImGui::Checkbox("Draw Points", &drawPoints);
 
-		//Modes d'enveloppe convexe
-		ImGui::Checkbox("Jarvis March", &jarvisMarchEnable);
-		ImGui::Checkbox("Graham Scan", &grahamScanEnabled);
-		ImGui::Checkbox("MovePoint", &movePointEnabled);
-		ImGui::Checkbox("Divide and Conquer", &divideAndConquerEnabled);
+		ImGui::Checkbox("Triangulation", &triangulationEnabled);
+		ImGui::Columns(2, "mixed");
+		ImGui::Separator();
 
-		ImGui::ColorEdit3("clear color", (float*)&clear_color);
+		ImGui::Text("Enveloppe convexe");
+		//Modes de sélection d'enveloppe convexe
+		//On ne peut choisir qu'un seul de ces modes à la fois
+		if (!triangulationEnabled)
+		{
+			if (!jarvisMarchEnabled && !grahamScanEnabled && !divideAndConquerEnabled)
+			{
+				ImGui::Checkbox("Jarvis March", &jarvisMarchEnabled);
+				ImGui::Checkbox("Graham Scan", &grahamScanEnabled);
+				ImGui::Checkbox("Divide and Conquer", &divideAndConquerEnabled);
+			}
+			else
+			{
+				if (jarvisMarchEnabled)
+					ImGui::Checkbox("Jarvis March", &jarvisMarchEnabled);
+				else if (grahamScanEnabled)
+					ImGui::Checkbox("Graham Scan", &grahamScanEnabled);
+				else if (divideAndConquerEnabled)
+					ImGui::Checkbox("Divide and Conquer", &divideAndConquerEnabled);
+			}
+		}
+		ImGui::NextColumn();
+
+		ImGui::Text("Graphic Manipulation");
+		if(!drawPoints)
+			ImGui::Checkbox("Move Points", &movePointEnabled);
+		if(!movePointEnabled)
+			ImGui::Checkbox("Draw Points", &drawPoints);
+
+		ImGui::Columns(1);
+		ImGui::Separator();
+
+		ImGui::ColorEdit3("Clear color", (float*)&clear_color);
 		if (ImGui::Button("Test Window")) show_test_window ^= 1;
 		ImGui::End();
 
@@ -320,7 +332,7 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferPoints);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point), points.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point2D), points.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 
@@ -331,7 +343,7 @@ void Initialize()
 
 	glGenBuffers(1, &vertexBufferHull);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
-	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point), hull.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 
@@ -342,7 +354,7 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferDelaunay);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point), edges.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	

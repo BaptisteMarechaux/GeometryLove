@@ -9,6 +9,14 @@ std::vector<Edge> Triangulation::GetAretes()
 {
 	return aretes;
 }
+std::vector<Point> Triangulation::GetSommets()
+{
+	return sommets;
+}
+std::vector<Triangle> Triangulation::GetTriangles()
+{
+	return triangles;
+}
 
 void Triangulation::Add(Point2D point2D)
 {
@@ -187,7 +195,7 @@ void Triangulation::Add(Point2D point2D)
 
 		//Cas B2
 		int j = 0;
-		while (listeAreteTemp.size() > 1)
+		while (listeAreteTemp.size() > 0)
 		{
 			Edge testEdge = listeAreteTemp[j];
 			if (testEdge.t1 || testEdge.t2)
@@ -209,11 +217,6 @@ void Triangulation::Add(Point2D point2D)
 							triangleToRemove = i;
 					}
 				}
-				for (int i = 0; i < aretes.size(); i++)
-				{
-					if (aretes[i] == testEdge)
-						aretes.erase(aretes.begin() + i);
-				}
 
 				if (triangleToRemove != -1)
 				{
@@ -221,6 +224,11 @@ void Triangulation::Add(Point2D point2D)
 					listeAreteTemp.push_back(triangles[triangleToRemove].e3);
 
 					triangles.erase(triangles.begin() + triangleToRemove);
+					for (int i = 0; i < aretes.size(); i++)
+					{
+						if (aretes[i] == testEdge)
+							aretes.erase(aretes.begin() + i);
+					}
 				}
 			}
 			else
@@ -234,6 +242,7 @@ void Triangulation::Add(Point2D point2D)
 			listeAreteTemp.erase(listeAreteTemp.begin());
 			j++;
 		}
+		sommets.push_back(point);
 	}
 
 	//marquage des triangles d'incidence

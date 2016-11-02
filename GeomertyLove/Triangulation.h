@@ -15,5 +15,7 @@ class Triangulation
 		void Add(Point2D point2D);
 		void Delete(Point2D point2D);
 		std::vector<Edge> GetAretes();
+		std::vector<Point> GetSommets();
+		std::vector<Triangle> GetTriangles();
 };
 
