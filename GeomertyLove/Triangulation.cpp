@@ -5,6 +5,13 @@ Triangulation::Triangulation()
 {
 }
 
+void Triangulation::Reset()
+{
+	aretes.clear();
+	sommets.clear();
+	triangles.clear();
+}
+
 std::vector<Edge> Triangulation::GetAretes()
 {
 	return aretes;
@@ -203,6 +210,7 @@ void Triangulation::Add(Point2D point2D)
 				int triangleToRemove = -1;
 				if (testEdge.t1 != NULL && testEdge.t1->circumCircleContains(point))
 				{
+					std::cout << "Circum circle contains point for t1" << std::endl;
 					for (int i = 0; i < triangles.size(); i++)
 					{
 						if (triangles[i] == *testEdge.t1)
@@ -211,6 +219,7 @@ void Triangulation::Add(Point2D point2D)
 				}
 				else if (testEdge.t2 != NULL && testEdge.t2->circumCircleContains(point))
 				{
+					std::cout << "Circum circle contains point for t2" << std::endl;
 					for (int i = 0; i < triangles.size(); i++)
 					{
 						if (triangles[i] == *testEdge.t2)
