@@ -5,6 +5,13 @@ Triangulation::Triangulation()
 {
 }
 
+void Triangulation::Reset()
+{
+	aretes.clear();
+	sommets.clear();
+	triangles.clear();
+}
+
 std::vector<Edge> Triangulation::GetAretes()
 {
 	return aretes;
@@ -198,37 +205,37 @@ void Triangulation::Add(Point2D point2D)
 		while (listeAreteTemp.size() > 0)
 		{
 			Edge testEdge = listeAreteTemp[j];
-			if (testEdge.t1 || testEdge.t2)
+		
+			int triangleToRemove = -1;
+			if (testEdge.t1 != NULL && testEdge.t1->circumCircleContains(point))
 			{
-				int triangleToRemove = -1;
-				if (testEdge.t1 != NULL && testEdge.t1->circumCircleContains(point))
+				std::cout << "Circum circle contains point for t1" << std::endl;
+				for (int i = 0; i < triangles.size(); i++)
 				{
-					for (int i = 0; i < triangles.size(); i++)
-					{
-						if (triangles[i] == *testEdge.t1)
-							triangleToRemove = i;
-					}
+					if (triangles[i] == *testEdge.t1)
+						triangleToRemove = i;
 				}
-				else if (testEdge.t2 != NULL && testEdge.t2->circumCircleContains(point))
+			}
+			else if (testEdge.t2 != NULL && testEdge.t2->circumCircleContains(point))
+			{
+				std::cout << "Circum circle contains point for t2" << std::endl;
+				for (int i = 0; i < triangles.size(); i++)
 				{
-					for (int i = 0; i < triangles.size(); i++)
-					{
-						if (triangles[i] == *testEdge.t2)
-							triangleToRemove = i;
-					}
+					if (triangles[i] == *testEdge.t2)
+						triangleToRemove = i;
 				}
+			}
 
-				if (triangleToRemove != -1)
+			if (triangleToRemove != -1)
+			{
+				listeAreteTemp.push_back(triangles[triangleToRemove].e2);
+				listeAreteTemp.push_back(triangles[triangleToRemove].e3);
+
+				triangles.erase(triangles.begin() + triangleToRemove);
+				for (int i = 0; i < aretes.size(); i++)
 				{
-					listeAreteTemp.push_back(triangles[triangleToRemove].e2);
-					listeAreteTemp.push_back(triangles[triangleToRemove].e3);
-
-					triangles.erase(triangles.begin() + triangleToRemove);
-					for (int i = 0; i < aretes.size(); i++)
-					{
-						if (aretes[i] == testEdge)
-							aretes.erase(aretes.begin() + i);
-					}
+					if (aretes[i] == testEdge)
+						aretes.erase(aretes.begin() + i);
 				}
 			}
 			else
@@ -240,7 +247,6 @@ void Triangulation::Add(Point2D point2D)
 				//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
 			}
 			listeAreteTemp.erase(listeAreteTemp.begin());
-			j++;
 		}
 		sommets.push_back(point);
 	}

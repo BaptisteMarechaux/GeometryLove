@@ -12,6 +12,7 @@ class Triangulation
 		bool checkVisibilityEdge(Edge &edge, Point &point);
 	public:
 		Triangulation();
+		void Reset();
 		void Add(Point2D point2D);
 		void Delete(Point2D point2D);
 		std::vector<Edge> GetAretes();

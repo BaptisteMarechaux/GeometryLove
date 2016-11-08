@@ -130,7 +130,7 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 
 		T.Add(point);
 		std::vector<Edge> edges_temp = T.GetAretes();
-		triangulation2D.empty();
+		triangulation2D.clear();
 		for (int i = 0; i < edges_temp.size(); i++)
 		{
 			triangulation2D.push_back(Point2D(edges_temp[i].p1.x, edges_temp[i].p1.y));
@@ -188,6 +188,7 @@ void callbackMouseMove(GLFWwindow *window, double x, double y)
 int main(int, char**)
 {
 	bool show_test_window = true;
+	bool reset = false;
 	bool show_another_window = false;
 	ImVec4 clear_color = ImColor(114, 144, 154);
 
@@ -239,6 +240,7 @@ int main(int, char**)
 		ImGui::Columns(1);
 		ImGui::Separator();
 
+		if (ImGui::Button("Reset")) reset ^= 1;
 		ImGui::ColorEdit3("Clear color", (float*)&clear_color);
 		if (ImGui::Button("Test Window")) show_test_window ^= 1;
 		ImGui::End();
@@ -259,6 +261,30 @@ int main(int, char**)
 		{
 			ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
 			ImGui::ShowTestWindow(&show_test_window);
+		}
+
+		if (reset)
+		{
+			T.Reset();
+
+			points.clear();
+			glBindVertexArray(vaoPoints);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
+			glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), points.data(), GL_STATIC_DRAW);
+			glBindVertexArray(0);
+
+			hull.clear();
+			glBindVertexArray(vaoHull);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
+			glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
+			glBindVertexArray(0);
+
+			triangulation2D.clear();
+			glBindVertexArray(vaoDelaunay);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
+			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+			glBindVertexArray(0);
+			reset = false;
 		}
 
 		// Rendering
