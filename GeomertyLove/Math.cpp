@@ -160,7 +160,7 @@ std::vector<Point> grahamScan(std::vector<Point> points)
 		for (int i = 0; i < n; i++)
 		{
 			//Trouver le produit scalaire
-			float dotProd = 0; //Fonction Produit scalaire
+			float dotProd = 0;// dotProduct(glm::vec2(), glm::vec2()); //Fonction Produit scalaire
 
 			smallerDotProdIndex = i;
 			//comparer avec les produits trouvés
@@ -280,17 +280,20 @@ std::vector<Point> findAndSuppressConcavePoints(std::vector<Point> points)
 		else
 		{
 			points.erase(std::remove(points.begin(), points.end(), pivot), points.end());
-			next = pivot;
-			pivot = previous;
+			next = previous;
+			pivot = initial;
 			go = false;
 			//Mettre a jour next et following;
 		}
-	} while (pivot != initial && go == true);
+	} while (pivot != initial || go == false);
 
 	return std::vector<Point>();
 }
 
 bool isConvexPoint(Point p, Point prevPoint, Point nextPoint)
 {
+
+	if (dotProduct(glm::vec2(prevPoint.x-p.x, prevPoint.y-p.y), glm::vec2(nextPoint.x-p.x, nextPoint.y-p.y)) >= 0)
+		return true;
 	return false;
 }
