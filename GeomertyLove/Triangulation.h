@@ -11,6 +11,8 @@ class Triangulation
 		std::vector<Triangle> triangles;
 		bool checkVisibilityEdge(Edge &edge, Point &point);
 	public:
+		std::vector<Edge> aretesExt;
+
 		Triangulation();
 		void Reset();
 		void Add(Point2D point2D);

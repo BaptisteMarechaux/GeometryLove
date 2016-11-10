@@ -10,7 +10,7 @@ Point::Point(const Point2D& point)
 
 std::ostream& operator<<(std::ostream& os, const Point &point)
 {
-	return os << "X : " << point.x << "Y : " << point.y;
+	return os << "X : " << point.x << " Y : " << point.y;
 }
 
 bool Point::operator<(const Point& point) const
