@@ -15,6 +15,7 @@
 #include "Math.h"
 #include "Triangulation.h"
 
+
 struct Line
 {
 	float x1, y1;
