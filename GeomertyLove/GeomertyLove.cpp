@@ -122,7 +122,7 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
 		glBindVertexArray(0);
 
-		hull = jarvisMarch(points);
+		hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
 		glBindVertexArray(vaoHull);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
 		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
@@ -309,8 +309,8 @@ int main(int, char**)
 void Initialize()
 {
 	// Setup window
-	width = 1280;
-	height = 720;
+	width = 1600;
+	height = 900;
 
 	glfwSetErrorCallback(error_callback);
 	if (!glfwInit())

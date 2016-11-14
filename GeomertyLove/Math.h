@@ -23,11 +23,11 @@ double angle(glm::vec2 vector, TPoint p1, TPoint p2);
 int isOnLine(Point &p1, Point &p2, Point &pointToCheck);
 
 std::vector<Point2D> jarvisMarch(std::vector<Point2D> points);
-std::vector<Point> grahamScan(std::vector<Point> points);
-std::vector<Point> divideAndConquer(std::vector<Point> points);
-Point barycenter(std::vector<Point> points);
+std::vector<Point2D> grahamScan(std::vector<Point2D> points);
+std::vector<Point2D> divideAndConquer(std::vector<Point2D> points);
+Point2D barycenter(std::vector<Point2D> points);
 
-std::vector<Point> findAndSuppressConcavePoints(std::vector<Point> points);
+std::vector<Point2D> findAndSuppressConcavePoints(std::vector<Point2D> points);
 bool isConvexPoint(Point p, Point prevPoint, Point nextPoint);
 
 void select_close(float x, float y, int& select, const std::vector<Point2D> &points);
