@@ -54,7 +54,7 @@ void Triangulation::Add(Point2D point2D)
 
 				if (vectorA.x * vectorB.y != vectorA.y * vectorB.x)
 				{
-					std::cout << "Pas colineaires" << std::endl;
+					//std::cout << "Pas colineaires" << std::endl;
 					colineaire = false;
 					break;
 				}
@@ -62,7 +62,7 @@ void Triangulation::Add(Point2D point2D)
 			//Point colineaire
 			if (colineaire)
 			{
-				std::cout << "Colineaires" << std::endl;
+				//std::cout << "Colineaires" << std::endl;
 
 				glm::vec2 longVector = makeVector(sommets[0], sommets[1]);
 				int indice1 = 0, indice2 = 1;
@@ -94,12 +94,12 @@ void Triangulation::Add(Point2D point2D)
 				{
 					if (sommets[indice].x > point.x || (sommets[indice].x == point.x && sommets[indice].y > point.y))
 					{
-						std::cout << "begin" << std::endl;
+						//std::cout << "begin" << std::endl;
 						aretes.push_back(Edge(point, sommets[indice]));
 					}
 					else
 					{
-						std::cout << "end" << std::endl;
+						//std::cout << "end" << std::endl;
 						aretes.push_back(Edge(sommets[indice], point));
 					}
 				}
@@ -131,7 +131,7 @@ void Triangulation::Add(Point2D point2D)
 							}
 						}
 					}
-					std::cout << "between " << ind1 << " and " << ind2 << std::endl;
+					//std::cout << "between " << ind1 << " and " << ind2 << std::endl;
 				}
 			}
 			//Point pas colineaire
@@ -188,14 +188,10 @@ void Triangulation::Add(Point2D point2D)
 		//Cas B1-2
 		else
 		{
-			for (int i = 0; i < triangles.size(); i++)
+			for (int i = 0; i < aretesExt.size(); i++)
 			{
-				if (checkVisibilityEdge(triangles[i].e1, point))
-					listeAreteTemp.push_back(triangles[i].e1);
-				if (checkVisibilityEdge(triangles[i].e2, point))
-					listeAreteTemp.push_back(triangles[i].e2);
-				if (checkVisibilityEdge(triangles[i].e3, point))
-					listeAreteTemp.push_back(triangles[i].e3);
+				if (checkVisibilityEdge(aretesExt[i], point))
+					listeAreteTemp.push_back(aretesExt[i]);
 			}
 			std::cout << "aretes vues " << listeAreteTemp.size() << std::endl;
 		}
@@ -209,7 +205,7 @@ void Triangulation::Add(Point2D point2D)
 			int triangleToRemove = -1;
 			if (testEdge.t1 != NULL && testEdge.t1->circumCircleContains(point))
 			{
-				std::cout << "Circum circle contains point for t1" << std::endl;
+				//std::cout << "Circum circle contains point for t1" << std::endl;
 				for (int i = 0; i < triangles.size(); i++)
 				{
 					if (triangles[i] == *testEdge.t1)
@@ -218,7 +214,7 @@ void Triangulation::Add(Point2D point2D)
 			}
 			else if (testEdge.t2 != NULL && testEdge.t2->circumCircleContains(point))
 			{
-				std::cout << "Circum circle contains point for t2" << std::endl;
+				//std::cout << "Circum circle contains point for t2" << std::endl;
 				for (int i = 0; i < triangles.size(); i++)
 				{
 					if (triangles[i] == *testEdge.t2)
@@ -228,18 +224,36 @@ void Triangulation::Add(Point2D point2D)
 
 			if (triangleToRemove != -1)
 			{
-				listeAreteTemp.push_back(triangles[triangleToRemove].e2);
-				listeAreteTemp.push_back(triangles[triangleToRemove].e3);
+				
+				if (testEdge == triangles[triangleToRemove].e1)
+				{
+					listeAreteTemp.push_back(triangles[triangleToRemove].e2);
+					listeAreteTemp.push_back(triangles[triangleToRemove].e3);
+				}
+				if (testEdge == triangles[triangleToRemove].e2)
+				{
+					listeAreteTemp.push_back(triangles[triangleToRemove].e1);
+					listeAreteTemp.push_back(triangles[triangleToRemove].e3);
+				}
+				if (testEdge == triangles[triangleToRemove].e3)
+				{
+					listeAreteTemp.push_back(triangles[triangleToRemove].e1);
+					listeAreteTemp.push_back(triangles[triangleToRemove].e2);
+				}
 
 				triangles.erase(triangles.begin() + triangleToRemove);
 				for (int i = 0; i < aretes.size(); i++)
 				{
 					if (aretes[i] == testEdge)
+					{
+						std::cout << "suppress arete p1 " << aretes[i].p1 << " p2 " << aretes[i].p2 << std::endl;
 						aretes.erase(aretes.begin() + i);
+					}
 				}
 			}
 			else
 			{
+				std::cout << "No circum circle" << std::endl;
 				aretes.push_back(Edge(testEdge.p1, point));
 				aretes.push_back(Edge(testEdge.p2, point));
 
@@ -250,27 +264,43 @@ void Triangulation::Add(Point2D point2D)
 		}
 		sommets.push_back(point);
 	}
-
-	//marquage des triangles d'incidence
-	for (int i = 0; i < triangles.size(); i++)
+		
+	for (int i = 0; i < aretes.size(); i++)
 	{
-		Triangle *triangle = new Triangle(triangles[i]);
-		if (triangles[i].e1.t1 == NULL)
-			triangles[i].e1.t1 = triangle;
-		else if (triangles[i].e1.t2 == NULL && triangles[i].e1.t1 != triangle)
-			triangles[i].e1.t2 = triangle;
+		aretes[i].t1 = NULL;
+		aretes[i].t2 = NULL;
 
-		if (triangles[i].e2.t1 == NULL)
-			triangles[i].e2.t1 = triangle;
-		else if (triangles[i].e2.t2 == NULL && triangles[i].e1.t1 != triangle)
-			triangles[i].e2.t2 = triangle;
+		for (int j = 0; j < triangles.size(); j++)
+		{
+			if (aretes[i] == triangles[j].e1 || aretes[i] == triangles[j].e2 || aretes[i] == triangles[j].e3)
+			{
+				Triangle *triangle = new Triangle(triangles[j]);
+				if (aretes[i].t1 == NULL)
+					aretes[i].t1 = triangle;
+				else if (aretes[i].t2 == NULL && triangle != aretes[i].t1)
+					aretes[i].t2 = triangle;
 
-		if (triangles[i].e3.t1 == NULL)
-			triangles[i].e3.t1 = triangle;
-		else if (triangles[i].e3.t2 == NULL && triangles[i].e1.t1 != triangle)
-			triangles[i].e3.t2 = triangle;
+				if (aretes[i] == triangles[j].e1)
+					aretes[i].n = triangles[j].e1.n;
+				if (aretes[i] == triangles[j].e2)
+					aretes[i].n = triangles[j].e2.n;
+				if (aretes[i] == triangles[j].e3)
+					aretes[i].n = triangles[j].e3.n;
+			}
+		}
 	}
-	//return _edges;
+
+	aretesExt.clear();
+	for (int i = 0; i < aretes.size(); i++)
+	{
+		if ((aretes[i].t1 != NULL && aretes[i].t2 == NULL) || (aretes[i].t1 == NULL && aretes[i].t2 != NULL))
+			aretesExt.push_back(aretes[i]);
+	}
+	for (int i = 0; i < sommets.size(); i++)
+		std::cout << sommets[i] << std::endl;
+	std::cout << "Aretes exterieures " << aretesExt.size() << std::endl;
+
+	std::cout << std::endl;
 }
 
 void Delete(Point point2D)
@@ -280,10 +310,8 @@ void Delete(Point point2D)
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
 {
-	if ((edge.t1 == NULL && edge.t2 != NULL) || (edge.t1 != NULL && edge.t2 == NULL))
-	{
-		if (dotProduct(edge.n, makeVector(edge.p1, point)) < 0)
-			return true;
-	}
+	int value = dotProduct(edge.n, makeVector(edge.p1, point));
+	if (value < 0)
+		return true;
 	return false;
 }

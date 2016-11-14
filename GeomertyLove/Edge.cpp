@@ -16,7 +16,7 @@ void Edge::operator=(const Edge &edge)
 
 bool Edge::operator == (const Edge &edge) const
 {
-	if (p1 == edge.p1 && p2 == edge.p2)
+	if ((p1 == edge.p1 && p2 == edge.p2) || (p1 == edge.p2 && p2 == edge.p1))
 		return true;
 	else
 		return false;

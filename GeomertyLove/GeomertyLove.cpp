@@ -50,6 +50,8 @@ static bool triangulationEnabled = true;
 static bool movePointEnabled = false;
 
 void Initialize();
+void majPoints();
+void majTriangulation();
 
 static void error_callback(int error, const char* description)
 {
@@ -95,7 +97,7 @@ void Render()
 	if (triangulation2D.size() > 0 && triangulationEnabled)
 	{
 		glBindVertexArray(vaoDelaunay);
-		glDrawArrays(GL_LINE_LOOP, 0, triangulation2D.size());
+		glDrawArrays(GL_LINES, 0, triangulation2D.size());
 		glBindVertexArray(0);
 	}
 
@@ -137,11 +139,11 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 			triangulation2D.push_back(Point2D(edges_temp[i].p2.x, edges_temp[i].p2.y));
 		}
 
-		std::cout << std::endl;
-		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
-		std::cout << "Sommets " << T.GetSommets().size() << std::endl;
-		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
-		std::cout << std::endl;
+		//std::cout << std::endl;
+		//std::cout << "Aretes " << T.GetAretes().size() << std::endl;
+		//std::cout << "Sommets " << T.GetSommets().size() << std::endl;
+		//std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
+		//std::cout << std::endl;
 
 		glBindVertexArray(vaoDelaunay);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
@@ -160,10 +162,8 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 			points[_selectMovePoint].x = x;
 			points[_selectMovePoint].y = y;
 
-			glBindVertexArray(vaoPoints);
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
-			glBindVertexArray(0);
+			majPoints();
+			majTriangulation();
 			_selectMovePoint = -1;
 		}
 	}
@@ -178,10 +178,8 @@ void callbackMouseMove(GLFWwindow *window, double x, double y)
 		points[_selectMovePoint].x = last_mousex;
 		points[_selectMovePoint].y = last_mousey;
 
-		glBindVertexArray(vaoPoints);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
-		glBindVertexArray(0);
+		majPoints();
+		majTriangulation();
 	}
 }
 
@@ -285,6 +283,8 @@ int main(int, char**)
 			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 			glBindVertexArray(0);
 			reset = false;
+
+			std::cout << std::endl << std::endl << std::endl << std::endl;
 		}
 
 		// Rendering
@@ -387,3 +387,33 @@ void Initialize()
 	
 	glBindVertexArray(0);
 }
+
+
+void majPoints()
+{
+	glBindVertexArray(vaoPoints);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
+	glBindVertexArray(0);
+}
+
+void majTriangulation()
+{
+	T.Reset();
+	for(int i = 0; i < points.size(); i++)
+		T.Add(points[i]);
+
+	std::vector<Edge> edges_temp = T.GetAretes();
+	triangulation2D.clear();
+	for (int i = 0; i < edges_temp.size(); i++)
+	{
+		triangulation2D.push_back(Point2D(edges_temp[i].p1.x, edges_temp[i].p1.y));
+		triangulation2D.push_back(Point2D(edges_temp[i].p2.x, edges_temp[i].p2.y));
+	}
+
+	glBindVertexArray(vaoDelaunay);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
+	glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+	glBindVertexArray(0);
+}
+
