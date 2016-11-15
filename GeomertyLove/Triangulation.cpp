@@ -193,14 +193,14 @@ void Triangulation::Add(Point2D point2D)
 				if (checkVisibilityEdge(aretesExt[i], point))
 					listeAreteTemp.push_back(aretesExt[i]);
 			}
-			std::cout << "aretes vues " << listeAreteTemp.size() << std::endl;
+			//std::cout << "aretes vues " << listeAreteTemp.size() << std::endl;
 		}
 
 		//Cas B2
 		int j = 0;
 		while (listeAreteTemp.size() > 0)
 		{
-			Edge testEdge = listeAreteTemp[j];
+			Edge testEdge = listeAreteTemp[0];
 		
 			int triangleToRemove = -1;
 			if (testEdge.t1 != NULL && testEdge.t1->circumCircleContains(point))
@@ -246,14 +246,14 @@ void Triangulation::Add(Point2D point2D)
 				{
 					if (aretes[i] == testEdge)
 					{
-						std::cout << "suppress arete p1 " << aretes[i].p1 << " p2 " << aretes[i].p2 << std::endl;
+						//std::cout << "suppress arete p1 " << aretes[i].p1 << " p2 " << aretes[i].p2 << std::endl;
 						aretes.erase(aretes.begin() + i);
 					}
 				}
 			}
 			else
 			{
-				std::cout << "No circum circle" << std::endl;
+				//std::cout << "No circum circle" << std::endl;
 				aretes.push_back(Edge(testEdge.p1, point));
 				aretes.push_back(Edge(testEdge.p2, point));
 
@@ -261,6 +261,12 @@ void Triangulation::Add(Point2D point2D)
 				//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
 			}
 			listeAreteTemp.erase(listeAreteTemp.begin());
+			j++;
+			if (j > aretes.size() * 2)
+			{
+				std::cout << "error" << std::endl;
+				break;
+			}
 		}
 		sommets.push_back(point);
 	}
@@ -296,11 +302,10 @@ void Triangulation::Add(Point2D point2D)
 		if ((aretes[i].t1 != NULL && aretes[i].t2 == NULL) || (aretes[i].t1 == NULL && aretes[i].t2 != NULL))
 			aretesExt.push_back(aretes[i]);
 	}
-	for (int i = 0; i < sommets.size(); i++)
-		std::cout << sommets[i] << std::endl;
-	std::cout << "Aretes exterieures " << aretesExt.size() << std::endl;
-
-	std::cout << std::endl;
+	//for (int i = 0; i < sommets.size(); i++)
+	//	std::cout << sommets[i] << std::endl;
+	//std::cout << "Aretes exterieures " << aretesExt.size() << std::endl;
+	//std::cout << std::endl;
 }
 
 void Delete(Point point2D)
