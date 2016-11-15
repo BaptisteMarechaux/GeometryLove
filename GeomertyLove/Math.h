@@ -19,6 +19,8 @@ double dotProduct(glm::vec2 vecA, glm::vec2 vecB);
 
 template <class TPoint>
 double angle(glm::vec2 vector, TPoint p1, TPoint p2);
+template <class TPoint>
+double fullAngle(glm::vec2 vector, TPoint p1, TPoint p2);
 
 int isOnLine(Point &p1, Point &p2, Point &pointToCheck);
 

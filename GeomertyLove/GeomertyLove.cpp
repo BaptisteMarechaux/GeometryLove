@@ -73,7 +73,7 @@ void Render()
 	if (movePointEnabled)
 	{
 		drawPoints = false;
-		hull = jarvisMarch(points);
+		hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
 		glBindVertexArray(vaoHull);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
 		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
