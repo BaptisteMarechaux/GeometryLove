@@ -68,6 +68,30 @@ double angle(glm::vec2 vector, TPoint p1, TPoint p2)
 	return angle * 180 / M_PI;
 }
 
+template<class TPoint>
+double fullAngle(glm::vec2 vector, TPoint p1, TPoint p2)
+{
+	glm::vec2 vectorPoint = makeVector(p1, p2);
+	int norm_vector_points = normVector(p1, p2);
+	int norm_vector = normVector(vector);
+
+	double dot = dotProduct(vectorPoint, vector);
+
+	int determinant = vectorPoint.x * vector.y - vectorPoint.y * vector.x;
+	double result = dot / (norm_vector_points * norm_vector);
+
+	if (result < -1.0) result = -1.0;
+	else if (result > 1.0) result = 1.0;
+	double angle = acos(result);
+	angle = atan2(determinant, dot);
+	if (determinant == 0) // colinear
+		return INFINITY;
+	if (angle < 0)
+		return 360 - (angle * 180 / M_PI)*-1;
+	else
+		return angle * 180 / M_PI;
+}
+
 int isOnLine(Point &p1, Point &p2, Point &pointToCheck)
 {
 	float dot1 = dotProduct(makeVector(p1, p2), makeVector(p1, pointToCheck));
@@ -140,57 +164,60 @@ std::vector<Point2D> jarvisMarch(std::vector<Point2D> points)
 }
 
 
-std::vector<Point> grahamScan(std::vector<Point> points)
+std::vector<Point2D> grahamScan(std::vector<Point2D> points)
 {
 	int n = points.size();
 	int foundPoints = 0;
-	std::vector<Point> hull;
+	std::vector<Point2D> hull;
 
 	if (n < 3)
 		return hull;
 
-	Point bar = barycenter(points);
+	Point2D bar = barycenter(points);
 
-	int smallerDot = INFINITY;
-	int smallerDotProdIndex;
+	double smallerAngle = 999;
+	int smallerDotProdIndex=0;
+	float distanceToBar = 99999;
 
 	do
 	{
-		
-		for (int i = 0; i < n; i++)
+		smallerAngle = 999;
+		for (int i = 0; i < points.size(); i++)
 		{
 			//Trouver le produit scalaire
-			float dotProd = 0;// dotProduct(glm::vec2(), glm::vec2()); //Fonction Produit scalaire
+			glm::vec2 a = glm::vec2(1, 0); //x
+			glm::vec2 b = glm::vec2(points[i].x-bar.x, points[i].y-bar.y); //segment to barycenter
+			double foundAngle = fullAngle(a, bar, points[i]);
 
-			smallerDotProdIndex = i;
 			//comparer avec les produits trouvés
-			
-			if (dotProd == smallerDotProdIndex)
+			if (foundAngle <= smallerAngle)
 			{
-				smallerDotProdIndex = 0;
+				distanceToBar = glm::distance(glm::vec2(points[i].x, points[i].y), glm::vec2(bar.x, bar.y));
+				smallerAngle = foundAngle;
+				smallerDotProdIndex = i;
 			}
-					
+	
 		}
 		hull.push_back(points[smallerDotProdIndex]);
+		points.erase(points.begin() + smallerDotProdIndex);
 		foundPoints++;
 		
 	} while (foundPoints < n);
-
 	hull = findAndSuppressConcavePoints(hull);
 	
 	return hull;
 }
 
-std::vector<Point> divideAndConquer(std::vector<Point> points)
+std::vector<Point2D> divideAndConquer(std::vector<Point2D> points)
 {
-	return std::vector<Point>();
+	return std::vector<Point2D>();
 }
 
-Point barycenter(std::vector<Point> points)
+Point2D barycenter(std::vector<Point2D> points)
 {
-	Point finalPoint(0, 0);
+	Point2D finalPoint(0, 0);
 	int n = points.size();
-	int x, y;
+	int x=0, y=0;
 
 	for (int i = 0; i < n; i++)
 	{
@@ -198,7 +225,7 @@ Point barycenter(std::vector<Point> points)
 		y += points[i].y / n;
 	}
 
-	finalPoint = Point(x, y);
+	finalPoint = Point2D(x, y);
 
 	return finalPoint;
 }
@@ -257,43 +284,62 @@ void select_close(float x, float y, int& select, const std::vector<Point2D> &poi
 		select = -1;
 }
 
-std::vector<Point> findAndSuppressConcavePoints(std::vector<Point> points)
+std::vector<Point2D> findAndSuppressConcavePoints(std::vector<Point2D> points)
 {
-	Point initial;
+	int initial;
 	if (points.size() > 0)
-		initial = Point(points[0].x, points[0].y);
+		initial = 0;
 	else
-		return std::vector<Point>();
-	Point pivot = Point(initial.x, initial.y);
-	Point next = points.size() > 1 ? points[1] : initial;
-	Point previous = points.size() > 2 ? points[2] : points.size() > 1 ? next : initial;
+		return std::vector<Point2D>();
+
+
+	std::vector<Point2D> L = points;
+	int pivot = 0;
+	int next = points.size() > 1 ? 1 : 0;
+	int previous = points.size() - 1;
 	bool go = false;
 	do {
-		if (isConvexPoint(pivot, previous, next))
+		if (isConvexPoint(points[pivot], points[previous], points[next]))
 		{
 			previous = pivot;
 			pivot = next;
-			//next = ???;
-			//Mettre a jour next et following
+			next = next + 1 < points.size() ? next + 1 : 0;
 			go = true;
 		}
 		else
 		{
-			points.erase(std::remove(points.begin(), points.end(), pivot), points.end());
-			next = previous;
+			initial = previous;
+			if (std::find(L.begin(), L.end(), points[pivot]) != L.end())
+				L.erase(std::remove(L.begin(), L.end(), points[pivot]), L.end());
+			if (std::find(points.begin(), points.end(), points[pivot]) != points.end())
+				points.erase(std::remove(points.begin(), points.end(), points[pivot]), points.end());
 			pivot = initial;
+			if (pivot == points.size())
+			{
+				std::cout << "Capacité dépassée" << std::endl;
+				initial = 0;
+				pivot = 0;
+				next = 1;
+				previous = points.size() - 1;
+			}
+				
+			next = pivot+1 < points.size() ? pivot+1 : 0;
+			previous = pivot-1 >= 0 ? pivot-1 : points.size()-1;
 			go = false;
 			//Mettre a jour next et following;
 		}
 	} while (pivot != initial || go == false);
 
-	return std::vector<Point>();
+	return L;
 }
 
 bool isConvexPoint(Point p, Point prevPoint, Point nextPoint)
 {
+	glm::vec2 vector1 = glm::vec2(prevPoint.x - p.x, prevPoint.y - p.y);
+	glm::vec2 vector2 = glm::vec2(nextPoint.x - p.x, nextPoint.y - p.y);
 
-	if (dotProduct(glm::vec2(prevPoint.x-p.x, prevPoint.y-p.y), glm::vec2(nextPoint.x-p.x, nextPoint.y-p.y)) >= 0)
+	double a = fullAngle(vector1, p, nextPoint);
+	if (a >= 180)
 		return true;
 	return false;
 }
