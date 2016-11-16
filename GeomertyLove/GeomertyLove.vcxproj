@@ -202,6 +202,7 @@
     <ClCompile Include="Triangulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\shaders\blue.fs" />
     <None Include="..\shaders\simple.fs" />
     <None Include="..\shaders\simple.vs" />
   </ItemGroup>

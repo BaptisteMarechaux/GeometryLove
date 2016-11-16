@@ -25,12 +25,14 @@ struct Line
 std::vector<Point2D> points;
 std::vector<Point2D> hull;
 std::vector<Point2D> triangulation2D;
+std::vector<Point2D> extPoints;
+std::vector<GLfloat> colors;
 
 Triangulation T;
 
 GLFWwindow* window;
-GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay;
-GLuint mvp_location, position_location, color_location, program;
+GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay, vaoExt, vertexBufferExt;
+GLuint mvp_location, position_location, color_location, program, colorbuffer;
 int width, height;
 int index = 0, indexHull = 0;
 int nbFrames = 0;
@@ -103,6 +105,12 @@ void Render()
 		glBindVertexArray(vaoDelaunay);
 		glDrawArrays(GL_LINES, 0, triangulation2D.size());
 		glBindVertexArray(0);
+		if (extPoints.size() > 0)
+		{
+			glBindVertexArray(vaoExt);
+			glDrawArrays(GL_LINES, 0, extPoints.size());
+			glBindVertexArray(0);
+		}
 	}
 
 	if (hull.size() > 0 && jarvisMarchEnabled)
@@ -349,11 +357,17 @@ void Initialize()
 		0.0f, 0.0, 0.0f,
 		width, 0, 0.0f,
 	};
+
 	_selectMovePoint = -1;
 
 	mvp_location = glGetUniformLocation(program, "MVP");
 	position_location = glGetAttribLocation(program, "position");
-	//color_location = glGetAttribLocation(program, "color_in");
+	color_location = glGetUniformLocation(program, "color_in");
+
+	GLfloat usedColor[] =  { 1, 0, 0 };
+	//glUniform1fv(color_location, 3, usedColor);
+	//glUniform3f(color_location, 1, 0, 0);
+	glUniform3fv(color_location, 1, glm::value_ptr(glm::vec3(1, 0, 0)));
 
 	glGenVertexArrays(1, &vaoPoints);
 	glBindVertexArray(vaoPoints);
@@ -363,7 +377,6 @@ void Initialize()
 	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point2D), points.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
-
 	glBindVertexArray(0);
 
 	glGenVertexArrays(1, &vaoHull);
@@ -385,7 +398,13 @@ void Initialize()
 	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
-	
+	glBindVertexArray(0);
+
+	glGenBuffers(1, &vertexBufferExt);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
+	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(position_location);
+	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glBindVertexArray(0);
 }
 

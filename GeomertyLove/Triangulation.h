@@ -20,5 +20,6 @@ class Triangulation
 		std::vector<Edge> GetAretes();
 		std::vector<Point> GetSommets();
 		std::vector<Triangle> GetTriangles();
+		std::vector<Point2D> GetAllExtEdgesPoints();
 };
 

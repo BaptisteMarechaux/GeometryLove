@@ -25,6 +25,27 @@ std::vector<Triangle> Triangulation::GetTriangles()
 	return triangles;
 }
 
+std::vector<Point2D> Triangulation::GetAllExtEdgesPoints()
+{
+	/*
+	aretesExt.clear();
+	for (int i = 0; i < aretes.size(); i++)
+	{
+		if ((aretes[i].t1 != NULL && aretes[i].t2 == NULL) || (aretes[i].t1 == NULL && aretes[i].t2 != NULL))
+			aretesExt.push_back(aretes[i]);
+	}
+	*/
+
+	std::vector<Point2D> returnPoints = std::vector<Point2D>();
+	for(auto i=0;i<aretesExt.size();i++)
+	{
+		returnPoints.push_back(Point2D(aretesExt[i].p1.x, aretesExt[i].p1.y));
+		returnPoints.push_back(Point2D(aretesExt[i].p2.x, aretesExt[i].p2.y));
+	}
+
+	return returnPoints;
+}
+
 void Triangulation::Add(Point2D point2D)
 {
 	std::vector<Triangle> _triangles;
@@ -308,7 +329,7 @@ void Triangulation::Add(Point2D point2D)
 	//std::cout << std::endl;
 }
 
-void Delete(Point point2D)
+void Delete(Point2D point2D)
 {
 
 }
