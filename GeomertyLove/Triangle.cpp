@@ -3,9 +3,9 @@
 
 Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) 
 {
-	p1 = p1;
-	p2 = p2;
-	p3 = p3;
+	this->p1 = p1;
+	this->p2 = p2;
+	this->p3 = p3;
 
 	e1 = Edge(p1, p2);
 	e2 = Edge(p2, p3);

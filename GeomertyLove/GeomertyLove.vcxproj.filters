@@ -145,5 +145,8 @@
     <None Include="..\shaders\simple.vs">
       <Filter>Source Files\shaders</Filter>
     </None>
+    <None Include="..\shaders\blue.fs">
+      <Filter>Source Files\shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>
