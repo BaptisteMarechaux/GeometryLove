@@ -48,6 +48,7 @@ static bool grahamScanEnabled = false;
 static bool divideAndConquerEnabled = false;
 static bool triangulationEnabled = true;
 static bool movePointEnabled = false;
+static bool convexHull = false;
 
 void Initialize();
 void majPoints();
@@ -74,23 +75,26 @@ void Render()
 	{
 		drawPoints = false;
 		hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
-		glBindVertexArray(vaoHull);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
 		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
-		glBindVertexArray(0);
 	}
+
+	//to ensure maj of buffer hull 
+	if ((jarvisMarchEnabled || grahamScanEnabled) && convexHull != true)
+	{
+		hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
+		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
+
+		convexHull = true;
+	}
+	else if(!jarvisMarchEnabled && !grahamScanEnabled)
+		convexHull = false;
 
 	if (points.size() > 0)
 	{
 		glBindVertexArray(vaoPoints);
 		glDrawArrays(GL_POINTS, 0, points.size());
-		glBindVertexArray(0);
-	}
-
-	if (hull.size() > 0 && jarvisMarchEnabled)
-	{
-		glBindVertexArray(vaoHull);
-		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
 		glBindVertexArray(0);
 	}
 	//triangulation display
@@ -101,6 +105,12 @@ void Render()
 		glBindVertexArray(0);
 	}
 
+	if (hull.size() > 0 && jarvisMarchEnabled)
+	{
+		glBindVertexArray(vaoHull);
+		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
+		glBindVertexArray(0);
+	}
 	else if (hull.size() > 0 && grahamScanEnabled)
 	{
 		glBindVertexArray(vaoHull);
@@ -119,16 +129,15 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		Point2D point(x, y);
 		points.push_back(point);
 
-		glBindVertexArray(vaoPoints);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
-		glBindVertexArray(0);
 
-		hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
-		glBindVertexArray(vaoHull);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
-		glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
-		glBindVertexArray(0);
+		if (jarvisMarchEnabled || grahamScanEnabled)
+		{
+			hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
+			glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
+		}
 
 		T.Add(point);
 		std::vector<Edge> edges_temp = T.GetAretes();
@@ -145,10 +154,8 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		//std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
 		//std::cout << std::endl;
 
-		glBindVertexArray(vaoDelaunay);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
 		glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
-		glBindVertexArray(0);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -266,22 +273,16 @@ int main(int, char**)
 			T.Reset();
 
 			points.clear();
-			glBindVertexArray(vaoPoints);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
 			glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), points.data(), GL_STATIC_DRAW);
-			glBindVertexArray(0);
 
 			hull.clear();
-			glBindVertexArray(vaoHull);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
 			glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
-			glBindVertexArray(0);
 
 			triangulation2D.clear();
-			glBindVertexArray(vaoDelaunay);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
 			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
-			glBindVertexArray(0);
 			reset = false;
 
 			std::cout << std::endl << std::endl << std::endl << std::endl;
