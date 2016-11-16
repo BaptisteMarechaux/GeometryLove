@@ -182,6 +182,7 @@ std::vector<Point2D> grahamScan(std::vector<Point2D> points)
 	do
 	{
 		smallerAngle = 999;
+		smallerDotProdIndex = 0;
 		for (int i = 0; i < points.size(); i++)
 		{
 			//Trouver le produit scalaire
@@ -314,7 +315,10 @@ std::vector<Point2D> findAndSuppressConcavePoints(std::vector<Point2D> points)
 			if (std::find(points.begin(), points.end(), points[pivot]) != points.end())
 				points.erase(std::remove(points.begin(), points.end(), points[pivot]), points.end());
 			pivot = initial;
-			if (pivot == points.size())
+			next = pivot + 1 < points.size() ? pivot + 1 : 0;
+			previous = pivot - 1 >= 0 ? pivot - 1 : points.size() - 1;
+
+			if (pivot >= points.size())
 			{
 				std::cout << "Capacité dépassée" << std::endl;
 				initial = 0;
@@ -323,8 +327,7 @@ std::vector<Point2D> findAndSuppressConcavePoints(std::vector<Point2D> points)
 				previous = points.size() - 1;
 			}
 				
-			next = pivot+1 < points.size() ? pivot+1 : 0;
-			previous = pivot-1 >= 0 ? pivot-1 : points.size()-1;
+			
 			go = false;
 			//Mettre a jour next et following;
 		}
