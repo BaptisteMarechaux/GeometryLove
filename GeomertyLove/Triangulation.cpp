@@ -35,12 +35,15 @@ std::vector<Point2D> Triangulation::GetAllExtEdgesPoints()
 			aretesExt.push_back(aretes[i]);
 	}
 	*/
-
+	
 	std::vector<Point2D> returnPoints = std::vector<Point2D>();
 	for(auto i=0;i<aretesExt.size();i++)
 	{
-		returnPoints.push_back(Point2D(aretesExt[i].p1.x, aretesExt[i].p1.y));
-		returnPoints.push_back(Point2D(aretesExt[i].p2.x, aretesExt[i].p2.y));
+		if ((aretesExt[i].t1 != NULL && aretesExt[i].t2 == NULL) || (aretesExt[i].t1 == NULL && aretesExt[i].t2 != NULL))
+		{
+			returnPoints.push_back(Point2D(aretesExt[i].p1.x, aretesExt[i].p1.y));
+			returnPoints.push_back(Point2D(aretesExt[i].p2.x, aretesExt[i].p2.y));
+		}
 	}
 
 	return returnPoints;

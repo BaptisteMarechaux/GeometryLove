@@ -93,12 +93,16 @@ void Render()
 	else if(!jarvisMarchEnabled && !grahamScanEnabled)
 		convexHull = false;
 
+	float fragmentColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	glProgramUniform4fv(program, color_location, 1, fragmentColor);
+
 	if (points.size() > 0)
 	{
 		glBindVertexArray(vaoPoints);
 		glDrawArrays(GL_POINTS, 0, points.size());
 		glBindVertexArray(0);
 	}
+
 	//triangulation display
 	if (triangulation2D.size() > 0 && triangulationEnabled)
 	{
@@ -107,11 +111,15 @@ void Render()
 		glBindVertexArray(0);
 		if (extPoints.size() > 0)
 		{
+			float fragmentColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+			glProgramUniform4fv(program, color_location, 1, fragmentColor);
+
 			glBindVertexArray(vaoExt);
 			glDrawArrays(GL_LINES, 0, extPoints.size());
 			glBindVertexArray(0);
 		}
 	}
+	
 
 	if (hull.size() > 0 && jarvisMarchEnabled)
 	{
@@ -166,10 +174,8 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 
 		extPoints = T.GetAllExtEdgesPoints();
-		glBindVertexArray(vaoExt);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
 		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
-		glBindVertexArray(0);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -403,6 +409,9 @@ void Initialize()
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glBindVertexArray(0);
+
+	glGenVertexArrays(1, &vaoExt);
+	glBindVertexArray(vaoExt);
 
 	glGenBuffers(1, &vertexBufferExt);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
