@@ -164,6 +164,12 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
 		glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+
+		extPoints = T.GetAllExtEdgesPoints();
+		glBindVertexArray(vaoExt);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
+		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
+		glBindVertexArray(0);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -362,12 +368,10 @@ void Initialize()
 
 	mvp_location = glGetUniformLocation(program, "MVP");
 	position_location = glGetAttribLocation(program, "position");
-	color_location = glGetUniformLocation(program, "color_in");
+	color_location = glGetUniformLocation(program, "fragmentColor");
 
-	GLfloat usedColor[] =  { 1, 0, 0 };
-	//glUniform1fv(color_location, 3, usedColor);
-	//glUniform3f(color_location, 1, 0, 0);
-	glUniform3fv(color_location, 1, glm::value_ptr(glm::vec3(1, 0, 0)));
+	float fragmentColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	glProgramUniform4fv(program, color_location, 1, fragmentColor);
 
 	glGenVertexArrays(1, &vaoPoints);
 	glBindVertexArray(vaoPoints);

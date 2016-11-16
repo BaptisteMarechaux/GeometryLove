@@ -1,12 +1,7 @@
-varying vec3 color_out;
-
-//in vec3 fragmentColor;
-
-//out vec3 color;
+uniform vec4 fragmentColor;
 
 void main()
 {
-    //gl_FragColor = vec4(color_out, 1.0);
-	gl_FragColor = vec4(color_out, 1);
-	//color = fragmentColor;
+    //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	gl_FragColor = fragmentColor;
 }
