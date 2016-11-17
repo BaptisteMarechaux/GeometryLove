@@ -54,7 +54,6 @@ void Triangulation::Add(Point2D point2D)
 	std::vector<Triangle> _triangles;
 	std::vector<Edge> _edges;
 
-
 	Point point = (Point)point2D;
 	//Cas A (T ne contient pas de triangles)
 	if (triangles.size() == 0)
@@ -332,8 +331,19 @@ void Triangulation::Add(Point2D point2D)
 	//std::cout << std::endl;
 }
 
-void Delete(Point2D point2D)
+void Delete(Point2D suppressedPoint)
 {
+	//Déroulé : 
+	//Cas A : T ne contient aucun triangle/ les sommets sont colinéaires
+		//
+	//Cas B : T contient des triangles
+		//Determiner quel triangle contient suppressedPoint et.. :
+		//faire une liste LA1 d'arretes incidentes, liste LT de triangles incidents aux arretes de LA1 , liste LA2 d'arretes incidentes aux triangles mais non incidentes à supressedPoint
+		//supprimer le tout sauf LA2
+		//2 cas : 
+		//Polygone fermé
+
+		//Polygone ouvert
 
 }
 
