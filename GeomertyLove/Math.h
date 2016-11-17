@@ -33,3 +33,5 @@ std::vector<Point2D> findAndSuppressConcavePoints(std::vector<Point2D> points);
 bool isConvexPoint(Point p, Point prevPoint, Point nextPoint);
 
 void select_close(float x, float y, int& select, const std::vector<Point2D> &points);
+
+bool isCutting(glm::vec2 firstA, glm::vec2 firstB, glm::vec2 secA, glm::vec2 secB);

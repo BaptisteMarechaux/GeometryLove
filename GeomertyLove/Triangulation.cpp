@@ -354,3 +354,28 @@ bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
 		return true;
 	return false;
 }
+
+std::vector<Point2D> Triangulation::GetAllVisiblePoints(Point2D point)
+{
+	int nCuts = 0;
+	std::vector<Point2D> extPoints = GetAllExtEdgesPoints();
+
+	std::vector<Point2D> returnPoints = std::vector<Point2D>();
+	for (auto i = 0; i < extPoints.size(); i++)
+	{
+		nCuts = 0;
+		for (auto j = 0; j < aretesExt.size(); j++)
+		{
+			if (isCutting(glm::vec2(point.x, point.y), glm::vec2(extPoints[i].x, extPoints[i].y), glm::vec2(aretesExt[j].p1.x, aretesExt[j].p1.y), glm::vec2(aretesExt[j].p2.x, aretesExt[j].p2.y)))
+			{
+				nCuts++;
+			}
+		}
+		if (nCuts <= 1)
+		{
+			returnPoints.push_back(extPoints[i]);
+		}
+		
+	}
+	return std::vector<Point2D>();
+}

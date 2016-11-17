@@ -285,6 +285,41 @@ void select_close(float x, float y, int& select, const std::vector<Point2D> &poi
 		select = -1;
 }
 
+bool isCutting(glm::vec2 firstA, glm::vec2 firstB, glm::vec2 secA, glm::vec2 secB)
+{
+	//Verifie si la droite formée par first A,firstB coupe la droite contenant secA,secB
+
+	glm::mat2 matrixD = glm::mat2(
+		firstB.x - firstA.x, firstB.y - firstA.y,
+		secA.x - secB.x, secA.y - secB.y
+	);
+
+	glm::vec2 c2 = glm::vec2(
+		secA.x - firstA.x, secA.y - firstA.y
+	);
+
+	float tempDeterminant = glm::determinant(matrixD);
+	glm::vec2 res = glm::vec2(0, 0);
+
+	if (tempDeterminant != 0) {
+
+		glm::inverse(matrixD);
+		res = glm::inverse(matrixD) * c2;
+	}
+	else {
+		//erreur
+
+		return false;
+	}
+
+	if ((res.x >= 0 && res.x <= 1) || (res.y >= 0 && res.y <= 1)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 std::vector<Point2D> findAndSuppressConcavePoints(std::vector<Point2D> points)
 {
 	int initial;
