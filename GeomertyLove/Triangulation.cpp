@@ -331,7 +331,7 @@ void Triangulation::Add(Point2D point2D)
 	//std::cout << std::endl;
 }
 
-void Delete(Point2D suppressedPoint)
+void Triangulation::Delete(Point suppressedPoint)
 {
 	//Déroulé : 
 	//Cas A : T ne contient aucun triangle/ les sommets sont colinéaires
@@ -344,7 +344,42 @@ void Delete(Point2D suppressedPoint)
 		//Polygone fermé
 
 		//Polygone ouvert
+	auto incidentTriangles = std::vector<Triangle>();
+	auto incidentEdges = std::vector<Edge>();
+	auto affectedEdges = std::vector<Edge>(); //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point
 
+	if (triangles.size() <= 0)
+	{
+
+	}
+	else
+	{
+		//Determination des listes d'aretes et edges incidents
+		for each(Triangle triangle in triangles)
+		{
+			if (suppressedPoint == triangle.p1 || suppressedPoint == triangle.p2 || suppressedPoint == triangle.p3)
+			{
+				incidentTriangles.push_back(triangle);
+				
+				if (suppressedPoint == triangle.e1.p1 || suppressedPoint == triangle.e1.p2)
+					incidentEdges.push_back(triangle.e1);
+				else
+					affectedEdges.push_back(triangle.e1);
+
+				if (suppressedPoint == triangle.e2.p1 || suppressedPoint == triangle.e2.p2)
+					incidentEdges.push_back(triangle.e2);
+				else
+					incidentEdges.push_back(triangle.e2);
+
+				if (suppressedPoint == triangle.e3.p1 || suppressedPoint == triangle.e3.p2)
+					incidentEdges.push_back(triangle.e3);
+				else
+					affectedEdges.push_back(triangle.e3);
+
+			}
+		}
+		//On supprime les triangles et edges incidents à suppressedPoint
+	}
 }
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
@@ -378,4 +413,16 @@ std::vector<Point2D> Triangulation::GetAllVisiblePoints(Point2D point)
 		
 	}
 	return std::vector<Point2D>();
+}
+
+std::vector<Point2D> Triangulation::GetVoronoiPoints()
+{
+	auto centers = std::vector<Point2D>();
+	auto internEdges = std::vector<Edge>();
+	for each(Triangle triangle in triangles)
+	{
+		centers.push_back(triangle.getCircumCircleCenter());
+	}
+	//for each(Triangle triangle)
+	return centers;
 }

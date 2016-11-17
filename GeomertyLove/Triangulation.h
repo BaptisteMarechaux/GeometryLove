@@ -16,11 +16,12 @@ class Triangulation
 		Triangulation();
 		void Reset();
 		void Add(Point2D point2D);
-		void Delete(Point2D point2D);
+		void Delete(Point point2D);
 		std::vector<Edge> GetAretes();
 		std::vector<Point> GetSommets();
 		std::vector<Triangle> GetTriangles();
 		std::vector<Point2D> GetAllExtEdgesPoints();
 		std::vector<Point2D> GetAllVisiblePoints(Point2D point);
+		std::vector<Point2D> GetVoronoiPoints();
 };
 

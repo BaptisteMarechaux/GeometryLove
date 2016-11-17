@@ -26,12 +26,13 @@ std::vector<Point2D> points;
 std::vector<Point2D> hull;
 std::vector<Point2D> triangulation2D;
 std::vector<Point2D> extPoints;
+std::vector<Point2D> voronoiPoints;
 std::vector<GLfloat> colors;
 
 Triangulation T;
 
 GLFWwindow* window;
-GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay, vaoExt, vertexBufferExt;
+GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay, vaoExt, vertexBufferExt, vaoVoronoi, vertexBufferVoronoi;
 GLuint mvp_location, position_location, color_location, program, colorbuffer;
 int width, height;
 int index = 0, indexHull = 0;
@@ -51,6 +52,7 @@ static bool divideAndConquerEnabled = false;
 static bool triangulationEnabled = true;
 static bool movePointEnabled = false;
 static bool convexHull = false;
+static bool voronoiEnabled = false;
 
 void Initialize();
 void majPoints();
@@ -118,6 +120,17 @@ void Render()
 			glDrawArrays(GL_LINES, 0, extPoints.size());
 			glBindVertexArray(0);
 		}
+
+		if (voronoiPoints.size() > 3 && voronoiEnabled)
+		{
+			float fragmentColor[4] = { 0.0f, 1.0f, 1.0f, 1.0f };
+			glProgramUniform4fv(program, color_location, 1, fragmentColor);
+
+			glBindVertexArray(vaoVoronoi);
+			glDrawArrays(GL_POINTS, 0, voronoiPoints.size());
+			//glDrawArrays(GL_LINES, 0, voronoiPoints.size());
+			glBindVertexArray(0);
+		}
 	}
 	
 
@@ -176,6 +189,10 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		extPoints = T.GetAllExtEdgesPoints();
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
 		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
+
+		voronoiPoints = T.GetVoronoiPoints();
+		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
+		glBufferData(GL_ARRAY_BUFFER, voronoiPoints.size() * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -230,6 +247,7 @@ int main(int, char**)
 		ImGui::Text("This window is here to use the application!");
 
 		ImGui::Checkbox("Triangulation", &triangulationEnabled);
+		ImGui::Checkbox("Voronoi", &voronoiEnabled);
 		ImGui::Columns(2, "mixed");
 		ImGui::Separator();
 
@@ -303,6 +321,9 @@ int main(int, char**)
 			triangulation2D.clear();
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
 			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+
+			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
+			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
 			reset = false;
 
 			std::cout << std::endl << std::endl << std::endl << std::endl;
@@ -418,6 +439,16 @@ void Initialize()
 	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
+	glBindVertexArray(0);
+
+	glGenVertexArrays(1, &vaoVoronoi);
+	glBindVertexArray(vaoVoronoi);
+
+	glGenBuffers(1, &vertexBufferVoronoi);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
+	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
+	glEnableVertexAttribArray(position_location);
+	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid*)0);
 	glBindVertexArray(0);
 }
 

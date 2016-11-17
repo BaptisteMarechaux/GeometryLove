@@ -74,6 +74,17 @@ bool Triangle::circumCircleContains(const Point &v)
 	return dist <= circum_radius;
 }
 
+Point2D Triangle::getCircumCircleCenter()
+{
+	float ab = (p1.x * p1.x) + (p1.y * p1.y);
+	float cd = (p2.x * p2.x) + (p2.y * p2.y);
+	float ef = (p3.x * p3.x) + (p3.y * p3.y);
+
+	float circum_x = (ab * (p3.y - p2.y) + cd * (p1.y - p3.y) + ef * (p2.y - p1.y)) / (p1.x * (p3.y - p2.y) + p2.x * (p1.y - p3.y) + p3.x * (p2.y - p1.y)) / 2.f;
+	float circum_y = (ab * (p3.x - p2.x) + cd * (p1.x - p3.x) + ef * (p2.x - p1.x)) / (p1.y * (p3.x - p2.x) + p2.y * (p1.x - p3.x) + p3.y * (p2.x - p1.x)) / 2.f;
+	return Point2D(circum_x, circum_y);
+}
+
 bool Triangle::containsPoint(const Point &point)
 {
 	if (dotProduct(makeVector(p1, point), n1) < 0.0f)

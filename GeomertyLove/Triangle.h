@@ -22,6 +22,7 @@ class Triangle
 		friend std::ostream& operator<<(std::ostream& os, const Triangle &triangle);
 		bool operator == (const Triangle &triangle) const;
 		bool circumCircleContains(const Point &v);
+		Point2D getCircumCircleCenter();
 		bool containsPoint(const Point &point);
 		bool isClockwise();
 };
