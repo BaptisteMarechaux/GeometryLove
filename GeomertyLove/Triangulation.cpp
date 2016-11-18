@@ -344,6 +344,8 @@ void Triangulation::Delete(Point suppressedPoint)
 		//Polygone fermé
 
 		//Polygone ouvert
+	auto incidentTrianglesInd = std::vector<int>();
+
 	auto incidentTriangles = std::vector<Triangle>();
 	auto incidentEdges = std::vector<Edge>();
 	auto affectedEdges = std::vector<Edge>(); //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point
@@ -379,6 +381,28 @@ void Triangulation::Delete(Point suppressedPoint)
 			}
 		}
 		//On supprime les triangles et edges incidents à suppressedPoint
+		for (int i = 0; i < incidentTriangles.size(); i++)
+		{
+			for (int j = 0; j < triangles.size(); j++)
+			{
+				if(triangles[j] == incidentTriangles[i])
+					triangles.erase(triangles.begin() + j);
+			}
+		}
+		for (int i = 0; i < incidentEdges.size(); i++)
+		{
+			for (int j = 0; j < aretes.size(); j++)
+			{
+				if (aretes[j] == incidentEdges[i])
+					aretes.erase(aretes.begin() + j);
+			}
+		}
+
+		for (int i = 0; i < sommets.size(); i++)
+		{
+			if (sommets[i] == suppressedPoint)
+				sommets.erase(sommets.begin() + i);
+		}
 	}
 }
 

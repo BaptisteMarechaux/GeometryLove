@@ -46,6 +46,7 @@ float last_movex, last_movey;
 int _selectMovePoint = 0;
 
 static bool drawPoints = true;
+static bool deletePoints = false;
 static bool jarvisMarchEnabled = false;
 static bool grahamScanEnabled = false;
 static bool divideAndConquerEnabled = false;
@@ -56,6 +57,10 @@ static bool voronoiEnabled = false;
 
 void Initialize();
 void majPoints();
+
+//reload entirely the triangulation
+void reloadTriangulation();
+//get aretes and maj list of edges to draw
 void majTriangulation();
 
 static void error_callback(int error, const char* description)
@@ -195,6 +200,24 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		glBufferData(GL_ARRAY_BUFFER, voronoiPoints.size() * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
 	}
 
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && deletePoints && ImGui::IsMouseHoveringAnyWindow() == 0)
+	{
+		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
+		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
+		select_close(x, y, _selectMovePoint, points);
+		if (_selectMovePoint != -1)
+		{
+			T.Delete(points[_selectMovePoint]);
+			points.erase(points.begin() + _selectMovePoint);
+		}
+		//reloadTriangulation();
+
+		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
+		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
+
+		extPoints.clear();
+		_selectMovePoint = -1;
+	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
 	{
 		select_close(x, y, _selectMovePoint, points);
@@ -207,7 +230,7 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 			points[_selectMovePoint].y = y;
 
 			majPoints();
-			majTriangulation();
+			reloadTriangulation();
 			_selectMovePoint = -1;
 		}
 	}
@@ -223,7 +246,7 @@ void callbackMouseMove(GLFWwindow *window, double x, double y)
 		points[_selectMovePoint].y = last_mousey;
 
 		majPoints();
-		majTriangulation();
+		reloadTriangulation();
 	}
 }
 
@@ -275,10 +298,12 @@ int main(int, char**)
 		ImGui::NextColumn();
 
 		ImGui::Text("Graphic Manipulation");
-		if(!drawPoints)
+		if(!drawPoints && !deletePoints)
 			ImGui::Checkbox("Move Points", &movePointEnabled);
-		if(!movePointEnabled)
+		if(!movePointEnabled && !deletePoints)
 			ImGui::Checkbox("Draw Points", &drawPoints);
+		if (!movePointEnabled && !drawPoints)
+			ImGui::Checkbox("Delete Points", &deletePoints);
 
 		ImGui::Columns(1);
 		ImGui::Separator();
@@ -461,12 +486,18 @@ void majPoints()
 	glBindVertexArray(0);
 }
 
-void majTriangulation()
+void reloadTriangulation()
 {
 	T.Reset();
 	for(int i = 0; i < points.size(); i++)
 		T.Add(points[i]);
 
+	majTriangulation();
+}
+
+
+void majTriangulation()
+{
 	std::vector<Edge> edges_temp = T.GetAretes();
 	triangulation2D.clear();
 	for (int i = 0; i < edges_temp.size(); i++)
@@ -480,4 +511,3 @@ void majTriangulation()
 	glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 	glBindVertexArray(0);
 }
-
