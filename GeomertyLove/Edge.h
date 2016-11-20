@@ -16,6 +16,7 @@ class Edge
 		void operator=(const Edge &edge);
 		bool operator == (const Edge &edge) const;
 		void isVisible(Point &point);
+		glm::vec2  GetCenter();
 
 		Point p1;
 		Point p2;

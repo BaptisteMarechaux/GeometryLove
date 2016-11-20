@@ -23,5 +23,6 @@ class Triangulation
 		std::vector<Point2D> GetAllExtEdgesPoints();
 		std::vector<Point2D> GetAllVisiblePoints(Point2D point);
 		std::vector<Point2D> GetVoronoiPoints();
+		void GetNormalsTriangle(std::vector<glm::vec2> &centers, std::vector<glm::vec2>&normals);
 };
 

@@ -294,6 +294,12 @@ void Triangulation::Add(Point2D point2D)
 		sommets.push_back(point);
 	}
 		
+
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		triangles[i].updateNormals();
+	}
+
 	for (int i = 0; i < aretes.size(); i++)
 	{
 		aretes[i].t1 = NULL;
@@ -325,6 +331,9 @@ void Triangulation::Add(Point2D point2D)
 		if ((aretes[i].t1 != NULL && aretes[i].t2 == NULL) || (aretes[i].t1 == NULL && aretes[i].t2 != NULL))
 			aretesExt.push_back(aretes[i]);
 	}
+
+	
+
 	//for (int i = 0; i < sommets.size(); i++)
 	//	std::cout << sommets[i] << std::endl;
 	//std::cout << "Aretes exterieures " << aretesExt.size() << std::endl;
@@ -449,4 +458,19 @@ std::vector<Point2D> Triangulation::GetVoronoiPoints()
 	}
 	//for each(Triangle triangle)
 	return centers;
+}
+
+void Triangulation::GetNormalsTriangle(std::vector<glm::vec2> &centers, std::vector<glm::vec2>&normals)
+{
+	for (int i = 0; i < triangles.size(); i++)
+	{
+		normals.push_back(triangles[i].e1.n);
+		centers.push_back(triangles[i].e1.GetCenter());
+
+		normals.push_back(triangles[i].e2.n);
+		centers.push_back(triangles[i].e2.GetCenter());
+
+		normals.push_back(triangles[i].e3.n);
+		centers.push_back(triangles[i].e3.GetCenter());
+	}
 }

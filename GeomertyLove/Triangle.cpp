@@ -11,39 +11,7 @@ Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3)
 	e2 = Edge(p2, p3);
 	e3 = Edge(p3, p1);
 
-
-	if (isClockwise())
-	{
-		glm::vec2 vector = makeVector(p1, p2);
-		n1 = glm::vec2(vector.y, -vector.x);
-		e1.n = n1;
-
-		vector = makeVector(p2, p3);
-		n2 = glm::vec2(vector.y, -vector.x);
-		e2.n = n2;
-
-		vector = makeVector(p3, p1);
-		n3 = glm::vec2(vector.y, -vector.x);
-		e3.n = n3;
-	}
-	else
-	{
-		glm::vec2 vector = makeVector(p1, p2);
-		n1 = glm::vec2(-vector.y, vector.x);
-		e1.n = n1;
-
-		vector = makeVector(p2, p3);
-		n2 = glm::vec2(-vector.y, vector.x);
-		e2.n = n2;
-
-		vector = makeVector(p3, p1);
-		n3 = glm::vec2(-vector.y, vector.x);
-		e3.n = n3;
-	}
-
-	//std::cout << n1.x << " " << n1.y << std::endl;
-	//std::cout << n2.x << " " << n2.y << std::endl;
-	//std::cout << n3.x << " " << n3.y << std::endl;
+	updateNormals();
 }
 
 Triangle::Triangle() : p1(Point()), p2(Point()), p3(Point()), e1(Edge()), e2(Edge()), e3(Edge()) {}
@@ -87,11 +55,11 @@ Point2D Triangle::getCircumCircleCenter()
 
 bool Triangle::containsPoint(const Point &point)
 {
-	if (dotProduct(makeVector(p1, point), n1) < 0.0f)
+	if (dotProduct(makeVector(p1, point), e1.n) < 0.0f)
 		return false;
-	if (dotProduct(makeVector(p2, point), n2) < 0.0f)
+	if (dotProduct(makeVector(p2, point), e2.n) < 0.0f)
 		return false;
-	if (dotProduct(makeVector(p3, point), n3) < 0.0f)
+	if (dotProduct(makeVector(p3, point), e3.n) < 0.0f)
 		return false;
 	return true;
 }
@@ -106,4 +74,30 @@ bool Triangle::isClockwise()
 		return true;
 	else
 		return false;
+}
+
+void Triangle::updateNormals()
+{
+	if (isClockwise())
+	{
+		glm::vec2 vector = makeVector(p1, p2);
+		e1.n = glm::vec2(vector.y, -vector.x);
+
+		vector = makeVector(p2, p3);
+		e2.n = glm::vec2(vector.y, -vector.x);
+
+		vector = makeVector(p3, p1);
+		e3.n = glm::vec2(vector.y, -vector.x);
+	}
+	else
+	{
+		glm::vec2 vector = makeVector(p1, p2);
+		e1.n = glm::vec2(-vector.y, vector.x);
+
+		vector = makeVector(p2, p3);
+		e2.n = glm::vec2(-vector.y, vector.x);
+
+		vector = makeVector(p3, p1);
+		e3.n = glm::vec2(-vector.y, vector.x);
+	}
 }

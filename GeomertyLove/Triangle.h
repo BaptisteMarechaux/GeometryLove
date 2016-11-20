@@ -15,7 +15,6 @@ class Triangle
 	public:
 		Edge e1, e2, e3;
 		Point p1, p2, p3;
-		glm::vec2 n1, n2, n3;
 
 		Triangle(Point p1, Point p2, Point p3);
 		Triangle();
@@ -25,6 +24,7 @@ class Triangle
 		Point2D getCircumCircleCenter();
 		bool containsPoint(const Point &point);
 		bool isClockwise();
+		void updateNormals();
 };
 
 #endif
