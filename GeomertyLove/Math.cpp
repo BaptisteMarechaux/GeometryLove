@@ -270,19 +270,22 @@ std::cout << triangle << std::endl;
 
 void select_close(float x, float y, int& select, const std::vector<Point2D> &points)
 {
-	double prevNorm = sqrt(pow(points[0].x - x, 2) + pow(points[0].y - y, 2));
-	select = 0;
-	for (unsigned int i = 0; i < points.size(); i++)
+	if (points.size() > 0)
 	{
-		double norm = sqrt(pow(points[i].x - x, 2) + pow(points[i].y - y, 2));
-		if (norm < prevNorm)
+		double prevNorm = sqrt(pow(points[0].x - x, 2) + pow(points[0].y - y, 2));
+		select = 0;
+		for (unsigned int i = 0; i < points.size(); i++)
 		{
-			prevNorm = norm;
-			select = i;
+			double norm = sqrt(pow(points[i].x - x, 2) + pow(points[i].y - y, 2));
+			if (norm < prevNorm)
+			{
+				prevNorm = norm;
+				select = i;
+			}
 		}
+		if (prevNorm > sqrt(25))
+			select = -1;
 	}
-	if (prevNorm > sqrt(25))
-		select = -1;
 }
 
 bool isCutting(glm::vec2 firstA, glm::vec2 firstB, glm::vec2 secA, glm::vec2 secB)

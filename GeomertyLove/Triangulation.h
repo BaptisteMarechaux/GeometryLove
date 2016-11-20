@@ -21,7 +21,7 @@ class Triangulation
 		void Delete(Point point2D);
 		bool checkVisibilityEdge(Edge &edge, Point &point);
 
-		void Triangulation::GetVoronoiPoints(std::vector<Point2D> edges);
+		void Triangulation::GetVoronoiPoints(std::vector<Point2D> &edges);
 
 
 		//Debug

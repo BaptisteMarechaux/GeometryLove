@@ -238,7 +238,7 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 			points.erase(points.begin() + _selectMovePoint);
 		}
 		//reloadTriangulation();
-
+		majTriangulation();
 		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
 		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
 

@@ -309,61 +309,59 @@ void Triangulation::Delete(Point suppressedPoint)
 		//Polygone fermé
 
 		//Polygone ouvert
-	auto incidentTrianglesInd = std::vector<int>();
-
-	auto incidentTriangles = std::vector<Triangle>();
-	auto incidentEdges = std::vector<Edge>();
+	std::list<Triangle> incidentTriangles;
+	std::list<Edge> incidentEdges;
 	auto affectedEdges = std::vector<Edge>(); //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point
 
 	if (triangles.size() <= 0)
 	{
 
 	}
-	/*else
+	else
 	{
 		//Determination des listes d'aretes et edges incidents
-		for each(Triangle triangle in triangles)
+		std::list<Triangle>::iterator it = triangles.begin();
+		for (; it != triangles.end(); ++it)
 		{
-			if (suppressedPoint == triangle.P1() || suppressedPoint == triangle.P2() || suppressedPoint == triangle.P3())
+			if (suppressedPoint == it->P1() || suppressedPoint == it->P2() || suppressedPoint == it->P3())
 			{
-				incidentTriangles.push_back(triangle);
+				incidentTriangles.push_back(*(it));
 				
-				if (suppressedPoint == triangle.E1()->p1 || suppressedPoint == triangle.E1()->p2)
-					incidentEdges.push_back(*triangle.E1());
+				if (suppressedPoint == it->E1()->p1 || suppressedPoint == it->E1()->p2)
+					incidentEdges.push_back(*(it)->E1());
 				else
-					affectedEdges.push_back(*triangle.E1());
+					affectedEdges.push_back(*(it)->E1());
 
-				if (suppressedPoint == triangle.E2()->p1 || suppressedPoint == triangle.E2()->p2)
-					incidentEdges.push_back(*triangle.E2());
+				if (suppressedPoint == it->E2()->p1 || suppressedPoint == it->E2()->p2)
+					incidentEdges.push_back(*(it)->E2());
 				else
-					incidentEdges.push_back(*triangle.E2());
+					incidentEdges.push_back(*(it)->E2());
 
-				if (suppressedPoint == triangle.E3()->p1 || suppressedPoint == triangle.E3()->p2)
-					incidentEdges.push_back(*triangle.E3());
+				if (suppressedPoint == it->E3()->p1 || suppressedPoint == it->E3()->p2)
+					incidentEdges.push_back(*(it)->E3());
 				else
-					affectedEdges.push_back(*triangle.E3());
-
+					affectedEdges.push_back(*(it)->E3());
 			}
 		}
-		//On supprime les triangles et edges incidents à suppressedPoint
-		for (int i = 0; i < incidentTriangles.size(); i++)
+
+		std::list<Triangle>::iterator itIncidentTriangle = incidentTriangles.begin();
+		for (; itIncidentTriangle != incidentTriangles.end(); ++itIncidentTriangle)
 		{
-			for (int j = 0; j < triangles.size(); j++)
+			std::list<Triangle>::iterator triangleToRemove;
+			triangleToRemove = std::find(triangles.begin(), triangles.end(), *itIncidentTriangle);
+			if (triangleToRemove != triangles.end())
 			{
-				if (triangles[j] == incidentTriangles[i])
-				{
-					triangles[j].UnsetEgdeRefs();
-					triangles.erase(triangles.begin() + j);
-				}
+				triangleToRemove->UnsetEgdeRefs();
+				triangles.erase(triangleToRemove);
 			}
 		}
-		for (int i = 0; i < incidentEdges.size(); i++)
+		std::list<Edge>::iterator itIncidentEdges = incidentEdges.begin();
+		for (; itIncidentEdges != incidentEdges.end(); ++itIncidentEdges)
 		{
-			for (int j = 0; j < aretes.size(); j++)
-			{
-				if (aretes[j] == incidentEdges[i])
-					aretes.erase(aretes.begin() + j);
-			}
+			std::list<Edge>::iterator edgeToRemove;
+			edgeToRemove = std::find(aretes.begin(), aretes.end(), *itIncidentEdges);
+			if (edgeToRemove != aretes.end())
+				aretes.erase(edgeToRemove);
 		}
 
 		for (int i = 0; i < sommets.size(); i++)
@@ -371,7 +369,7 @@ void Triangulation::Delete(Point suppressedPoint)
 			if (sommets[i] == suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
-	}*/
+	}
 }
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
@@ -382,7 +380,7 @@ bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
 	return false;
 }
 
-void Triangulation::GetVoronoiPoints(std::vector<Point2D> edges)
+void Triangulation::GetVoronoiPoints(std::vector<Point2D> &edges)
 {
 	edges.clear();
 
@@ -397,6 +395,12 @@ void Triangulation::GetVoronoiPoints(std::vector<Point2D> edges)
 			edges.push_back(center1);
 			edges.push_back(center2);
 		}
+		//else if (it->T1() != NULL && it->T2() == NULL)
+		//{
+		//	Point2D center1 = it->T1()->getCircumCircleCenter();
+		//
+		//	Point2D center1 = it->T1()->getCircumCircleCenter();
+		//}
 	}
 }
 
