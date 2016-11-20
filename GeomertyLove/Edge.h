@@ -15,14 +15,19 @@ class Edge
 		friend std::ostream& operator<<(std::ostream& os, const Edge &edge);
 		void operator=(const Edge &edge);
 		bool operator == (const Edge &edge) const;
-		void isVisible(Point &point);
-		glm::vec2  GetCenter();
+		glm::vec2  GetCenter() const;
+		void SetTriangle(Triangle* triangle);
+		void UnsetTriangle(Triangle* triangle);
+		
+		Triangle* T1() { return t1; }
+		Triangle* T2() { return t2; }
 
 		Point p1;
 		Point p2;
+
+	private:
 		Triangle *t1;
 		Triangle *t2;
-		glm::vec2 n;
 };
 
 #endif

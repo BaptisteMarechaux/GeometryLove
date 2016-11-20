@@ -25,8 +25,8 @@ struct Line
 std::vector<Point2D> points;
 std::vector<Point2D> hull;
 std::vector<Point2D> triangulation2D;
+std::vector<Point2D> voronoiEdges;
 std::vector<Point2D> extPoints;
-std::vector<Point2D> voronoiPoints;
 std::vector<GLfloat> colors;
 std::vector<Point2D> normals;
 
@@ -151,13 +151,13 @@ void Render()
 			glBindVertexArray(0);
 		}
 
-		if (voronoiPoints.size() > 3 && voronoiEnabled)
+		if (voronoiEdges.size() > 1 && voronoiEnabled)
 		{
 			float fragmentColor[4] = { 0.0f, 1.0f, 1.0f, 1.0f };
 			glProgramUniform4fv(program, color_location, 1, fragmentColor);
 
 			glBindVertexArray(vaoVoronoi);
-			glDrawArrays(GL_POINTS, 0, voronoiPoints.size());
+			glDrawArrays(GL_LINES, 0, voronoiEdges.size());
 			//glDrawArrays(GL_LINES, 0, voronoiPoints.size());
 			glBindVertexArray(0);
 		}
@@ -199,12 +199,14 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		}
 
 		T.Add(point);
-		std::vector<Edge> edges_temp = T.GetAretes();
+		const std::list<Edge>& edges_temp = T.GetAretes();
 		triangulation2D.clear();
-		for (int i = 0; i < edges_temp.size(); i++)
+
+		std::list<Edge>::const_iterator it = edges_temp.begin();
+		for (; it != edges_temp.end(); ++it)
 		{
-			triangulation2D.push_back(Point2D(edges_temp[i].p1.x, edges_temp[i].p1.y));
-			triangulation2D.push_back(Point2D(edges_temp[i].p2.x, edges_temp[i].p2.y));
+			triangulation2D.push_back(Point2D(it->p1.x, it->p1.y));
+			triangulation2D.push_back(Point2D(it->p2.x, it->p2.y));
 		}
 
 		//std::cout << std::endl;
@@ -216,13 +218,13 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
 		glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 
-		extPoints = T.GetAllExtEdgesPoints();
+		T.GetAllExtEdgesPoints(extPoints);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
 		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
 
-		voronoiPoints = T.GetVoronoiPoints();
+		T.GetVoronoiPoints(voronoiEdges);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-		glBufferData(GL_ARRAY_BUFFER, voronoiPoints.size() * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, voronoiEdges.size() * sizeof(Point2D), voronoiEdges.data(), GL_STATIC_DRAW);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && deletePoints && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -240,7 +242,6 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
 		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
 
-		extPoints.clear();
 		_selectMovePoint = -1;
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -257,7 +258,7 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 			majPoints();
 			reloadTriangulation();
 
-			extPoints = T.GetAllExtEdgesPoints();
+			T.GetAllExtEdgesPoints(extPoints);
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
 			glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
 
@@ -278,7 +279,7 @@ void callbackMouseMove(GLFWwindow *window, double x, double y)
 		majPoints();
 		reloadTriangulation();
 
-		extPoints = T.GetAllExtEdgesPoints();
+		T.GetAllExtEdgesPoints(extPoints);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
 		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
 	}
@@ -382,7 +383,7 @@ int main(int, char**)
 			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiEdges.data(), GL_STATIC_DRAW);
 			reset = false;
 
 			std::cout << std::endl << std::endl << std::endl << std::endl;
@@ -505,7 +506,7 @@ void Initialize()
 
 	glGenBuffers(1, &vertexBufferVoronoi);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiPoints.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiEdges.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid*)0);
 	glBindVertexArray(0);
@@ -542,12 +543,13 @@ void reloadTriangulation()
 
 void majTriangulation()
 {
-	std::vector<Edge> edges_temp = T.GetAretes();
+	const std::list<Edge>& edges_temp = T.GetAretes();
 	triangulation2D.clear();
-	for (int i = 0; i < edges_temp.size(); i++)
+	std::list<Edge>::const_iterator it = edges_temp.begin();
+	for (; it != edges_temp.end(); ++it)
 	{
-		triangulation2D.push_back(Point2D(edges_temp[i].p1.x, edges_temp[i].p1.y));
-		triangulation2D.push_back(Point2D(edges_temp[i].p2.x, edges_temp[i].p2.y));
+		triangulation2D.push_back(Point2D(it->p1.x, it->p1.y));
+		triangulation2D.push_back(Point2D(it->p2.x, it->p2.y));
 	}
 
 	glBindVertexArray(vaoDelaunay);

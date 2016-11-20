@@ -1,20 +1,27 @@
 #include "Triangle.h"
 #include "Math.h"
 
-Triangle::Triangle(Point p1, Point p2, Point p3) : p1(p1), p2(p2), p3(p3) 
+Triangle::Triangle(Edge* e1, Edge* e2, Edge* e3,
+				   const Point& p1, const Point& p2, const Point& p3)
+	: e1(e1), e2(e2), e3(e3),
+	p1(p1), p2(p2), p3(p3)
 {
-	this->p1 = p1;
-	this->p2 = p2;
-	this->p3 = p3;
-
-	e1 = Edge(p1, p2);
-	e2 = Edge(p2, p3);
-	e3 = Edge(p3, p1);
-
 	updateNormals();
 }
 
-Triangle::Triangle() : p1(Point()), p2(Point()), p3(Point()), e1(Edge()), e2(Edge()), e3(Edge()) {}
+void Triangle::SetEgdeRefs()
+{
+	e1->SetTriangle(this);
+	e2->SetTriangle(this);
+	e3->SetTriangle(this);
+}
+
+void Triangle::UnsetEgdeRefs()
+{
+	e1->UnsetTriangle(this);
+	e2->UnsetTriangle(this);
+	e3->UnsetTriangle(this);
+}
 
 std::ostream& operator<<(std::ostream& os, const Triangle &triangle)
 {
@@ -28,7 +35,7 @@ bool Triangle::operator == (const Triangle &triangle) const
 		(p3 == triangle.p1 || p3 == triangle.p2 || p3 == triangle.p3);
 }
 
-bool Triangle::circumCircleContains(const Point &v)
+bool Triangle::circumCircleContains(const Point &v) const
 {
 	float ab = (p1.x * p1.x) + (p1.y * p1.y);
 	float cd = (p2.x * p2.x) + (p2.y * p2.y);
@@ -42,7 +49,7 @@ bool Triangle::circumCircleContains(const Point &v)
 	return dist <= circum_radius;
 }
 
-Point2D Triangle::getCircumCircleCenter()
+Point2D Triangle::getCircumCircleCenter() const
 {
 	float ab = (p1.x * p1.x) + (p1.y * p1.y);
 	float cd = (p2.x * p2.x) + (p2.y * p2.y);
@@ -53,18 +60,18 @@ Point2D Triangle::getCircumCircleCenter()
 	return Point2D(circum_x, circum_y);
 }
 
-bool Triangle::containsPoint(const Point &point)
+bool Triangle::containsPoint(const Point &point) const
 {
-	if (dotProduct(makeVector(p1, point), e1.n) < 0.0f)
+	if (dotProduct(makeVector(p1, point), n1) < 0.0f)
 		return false;
-	if (dotProduct(makeVector(p2, point), e2.n) < 0.0f)
+	if (dotProduct(makeVector(p2, point), n2) < 0.0f)
 		return false;
-	if (dotProduct(makeVector(p3, point), e3.n) < 0.0f)
+	if (dotProduct(makeVector(p3, point), n3) < 0.0f)
 		return false;
 	return true;
 }
 
-bool Triangle::isClockwise()
+bool Triangle::isClockwise() const
 {
 	float val1 = (p2.x - p1.x) * (p2.y + p1.y);
 	float val2 = (p3.x - p2.x) * (p3.y + p2.y);
@@ -76,28 +83,37 @@ bool Triangle::isClockwise()
 		return false;
 }
 
+glm::vec2 Triangle::getNormal(Edge *e)
+{
+	if (e1 == e)
+		return n1;
+	else if (e2 == e)
+		return n2;
+	else if (e3 == e)
+		return n3;
+}
 void Triangle::updateNormals()
 {
 	if (isClockwise())
 	{
 		glm::vec2 vector = makeVector(p1, p2);
-		e1.n = glm::vec2(vector.y, -vector.x);
+		n1 = glm::vec2(vector.y, -vector.x);
 
 		vector = makeVector(p2, p3);
-		e2.n = glm::vec2(vector.y, -vector.x);
+		n2 = glm::vec2(vector.y, -vector.x);
 
 		vector = makeVector(p3, p1);
-		e3.n = glm::vec2(vector.y, -vector.x);
+		n3 = glm::vec2(vector.y, -vector.x);
 	}
 	else
 	{
 		glm::vec2 vector = makeVector(p1, p2);
-		e1.n = glm::vec2(-vector.y, vector.x);
+		n1 = glm::vec2(-vector.y, vector.x);
 
 		vector = makeVector(p2, p3);
-		e2.n = glm::vec2(-vector.y, vector.x);
+		n2 = glm::vec2(-vector.y, vector.x);
 
 		vector = makeVector(p3, p1);
-		e3.n = glm::vec2(-vector.y, vector.x);
+		n3 = glm::vec2(-vector.y, vector.x);
 	}
 }

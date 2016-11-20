@@ -12,9 +12,11 @@ void Edge::operator=(const Edge &edge)
 {
 	p1 = edge.p1;
 	p2 = edge.p2;
+	t1 = edge.t1;
+	t2 = edge.t2;
 }
 
-glm::vec2 Edge::GetCenter()
+glm::vec2 Edge::GetCenter() const
 {
 	return glm::vec2((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
 }
@@ -25,4 +27,23 @@ bool Edge::operator == (const Edge &edge) const
 		return true;
 	else
 		return false;
+}
+
+void Edge::SetTriangle(Triangle* triangle)
+{
+	if (t1 == NULL)
+		t1 = triangle;
+	else if (t2 == NULL && triangle != t1)
+		t2 = triangle;
+}
+
+void Edge::UnsetTriangle(Triangle* triangle)
+{
+	if (t1 == triangle)
+	{
+		t1 = t2;
+		t2 = NULL;
+	}
+	else if (t2 == triangle)
+		t2 = NULL;
 }
