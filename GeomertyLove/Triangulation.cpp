@@ -369,7 +369,26 @@ void Triangulation::Delete(Point suppressedPoint)
 			if (sommets[i] == suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
-	}
+
+		//while (affectedEdges.size() > 3)
+		//{
+		//	for (int i = 0; i < affectedEdges.size(); i++)
+		//	{
+		//		if (affectedEdges[i].T1() != NULL)
+		//		{
+		//			if (affectedEdges[i].T1()->circumCircleContains(affectedEdges[i].p1))
+		//			{
+		//
+		//			}
+		//			else if(affectedEdges[i].T1()->circumCircleContains(affectedEdges[i].p2))
+		//			{
+		//
+		//			}
+		//
+		//		}
+		//	}
+		//}
+	}	//
 }
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
@@ -395,12 +414,32 @@ void Triangulation::GetVoronoiPoints(std::vector<Point2D> &edges)
 			edges.push_back(center1);
 			edges.push_back(center2);
 		}
-		//else if (it->T1() != NULL && it->T2() == NULL)
-		//{
-		//	Point2D center1 = it->T1()->getCircumCircleCenter();
-		//
-		//	Point2D center1 = it->T1()->getCircumCircleCenter();
-		//}
+		else if (it->T1() != NULL && it->T2() == NULL)
+		{
+			//bool colineaire = false;
+			////parcours de tout les sommets / si pas colineaire break
+			//
+			//if (it->T1()->E1()->p1.x * it->T1()->N1().y == it->T1()->E1()->p1.y * it->T1()->N1().x)
+			//{
+			//	colineaire = true;
+			//	break;
+			//}
+			//if (it->T1()->E2()->p1.x * it->T1()->N2().y == it->T1()->E2()->p1.y * it->T1()->N2().x)
+			//{
+			//	colineaire = true;
+			//	break;
+			//}
+			//if (it->T1()->E3()->p1.x * it->T1()->N3().y == it->T1()->E3()->p1.y * it->T1()->N3().x)
+			//{
+			//	colineaire = true;
+			//	break;
+			//}
+			////Point colineaire
+			//if (colineaire)
+			//{
+			//	std::cout << "colineaire" << std::endl;
+			//}
+		}
 	}
 }
 

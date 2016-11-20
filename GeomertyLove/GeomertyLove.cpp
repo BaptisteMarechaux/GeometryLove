@@ -158,7 +158,6 @@ void Render()
 
 			glBindVertexArray(vaoVoronoi);
 			glDrawArrays(GL_LINES, 0, voronoiEdges.size());
-			//glDrawArrays(GL_LINES, 0, voronoiPoints.size());
 			glBindVertexArray(0);
 		}
 	}
