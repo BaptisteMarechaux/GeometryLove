@@ -22,10 +22,11 @@ struct Line
 	float x2, y2;
 };
 
-std::vector<Point2D> points;
-std::vector<Point2D> hull;
+std::vector<Point2D> points, hull;
 std::vector<Point2D> triangulation2D;
-std::vector<Point2D> voronoiEdges;
+std::vector<Point2D> voronoi;
+
+//Debug
 std::vector<Point2D> extPoints;
 std::vector<GLfloat> colors;
 std::vector<Point2D> normals;
@@ -34,7 +35,9 @@ Triangulation T;
 
 GLFWwindow* window;
 
-GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vaoPoints, vaoHull, vaoDelaunay, vaoVoronoi, vertexBufferVoronoi;
+GLuint vertexBufferPoints, vertexBufferHull, vertexBufferDelaunay, vertexBufferVoronoi;
+GLuint vaoPoints, vaoHull, vaoDelaunay, vaoVoronoi;
+
 //Buffer Debug
 GLuint vaoExt, vertexBufferExt, vaoNormals, vertexBufferNormal;
 
@@ -151,13 +154,14 @@ void Render()
 			glBindVertexArray(0);
 		}
 
-		if (voronoiEdges.size() > 1 && voronoiEnabled)
+		if (voronoi.size() > 1 && voronoiEnabled)
 		{
 			float fragmentColor[4] = { 0.0f, 1.0f, 1.0f, 1.0f };
 			glProgramUniform4fv(program, color_location, 1, fragmentColor);
 
 			glBindVertexArray(vaoVoronoi);
-			glDrawArrays(GL_LINES, 0, voronoiEdges.size());
+			glDrawArrays(GL_LINES, 0, voronoi.size());
+			glDrawArrays(GL_POINTS, 0, voronoi.size());
 			glBindVertexArray(0);
 		}
 	}
@@ -221,9 +225,9 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
 		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
 
-		T.GetVoronoiPoints(voronoiEdges);
+		T.GetVoronoi(voronoi);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-		glBufferData(GL_ARRAY_BUFFER, voronoiEdges.size() * sizeof(Point2D), voronoiEdges.data(), GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, voronoi.size() * sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && deletePoints && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -371,18 +375,18 @@ int main(int, char**)
 
 			points.clear();
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-			glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), points.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), points.data(), GL_STATIC_DRAW);
 
 			hull.clear();
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
-			glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
 
 			triangulation2D.clear();
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 
 			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-			glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiEdges.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
 			reset = false;
 
 			std::cout << std::endl << std::endl << std::endl << std::endl;
@@ -464,7 +468,7 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferPoints);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-	glBufferData(GL_ARRAY_BUFFER,  100 * sizeof(Point2D), points.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER,  sizeof(Point2D), points.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glBindVertexArray(0);
@@ -474,7 +478,7 @@ void Initialize()
 
 	glGenBuffers(1, &vertexBufferHull);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
-	glBufferData(GL_ARRAY_BUFFER, 100 * sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 
@@ -485,7 +489,7 @@ void Initialize()
 	
 	glGenBuffers(1, &vertexBufferDelaunay);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glBindVertexArray(0);
@@ -495,7 +499,7 @@ void Initialize()
 
 	glGenBuffers(1, &vertexBufferExt);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
-	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid *)0);
 	glBindVertexArray(0);
@@ -505,7 +509,7 @@ void Initialize()
 
 	glGenBuffers(1, &vertexBufferVoronoi);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), voronoiEdges.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid*)0);
 	glBindVertexArray(0);
@@ -515,7 +519,7 @@ void Initialize()
 
 	glGenBuffers(1, &vertexBufferNormal);
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferNormal);
-	glBufferData(GL_ARRAY_BUFFER, 1000 * sizeof(Point2D), normals.data(), GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), normals.data(), GL_STATIC_DRAW);
 	glEnableVertexAttribArray(position_location);
 	glVertexAttribPointer(position_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 2, (GLvoid*)0);
 	glBindVertexArray(0);

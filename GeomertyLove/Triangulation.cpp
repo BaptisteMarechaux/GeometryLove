@@ -207,7 +207,7 @@ void Triangulation::Add(Point2D point2D)
 		{
 			Edge* testEdge = listeAreteTemp[0];
 			triangleToRemoveFound = false;
-			if (testEdge->T1() != NULL && testEdge->T1()->circumCircleContains(point))
+			if (testEdge->T1() != NULL && !testEdge->T1()->circumCircleContains(point))
 			{
 				for (it = triangles.begin(); it != triangles.end(); ++it)
 				{
@@ -215,7 +215,7 @@ void Triangulation::Add(Point2D point2D)
 						triangleToRemove = it;
 				}
 			}
-			else if (testEdge->T2() != NULL && testEdge->T2()->circumCircleContains(point))
+			else if (testEdge->T2() != NULL && !testEdge->T2()->circumCircleContains(point))
 			{
 				for (it = triangles.begin(); it != triangles.end(); ++it)
 				{
@@ -399,9 +399,9 @@ bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
 	return false;
 }
 
-void Triangulation::GetVoronoiPoints(std::vector<Point2D> &edges)
+void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi)
 {
-	edges.clear();
+	voronoi.clear();
 
 	std::list<Edge>::iterator it = aretes.begin();
 	for (; it != aretes.end(); ++it)
@@ -411,8 +411,8 @@ void Triangulation::GetVoronoiPoints(std::vector<Point2D> &edges)
 			Point2D center1 = it->T1()->getCircumCircleCenter();
 			Point2D center2 = it->T2()->getCircumCircleCenter();
 
-			edges.push_back(center1);
-			edges.push_back(center2);
+			voronoi.push_back(center1);
+			voronoi.push_back(center2);
 		}
 		else if (it->T1() != NULL && it->T2() == NULL)
 		{
