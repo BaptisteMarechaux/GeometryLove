@@ -409,13 +409,29 @@ void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi)
 		if (it->T1() != NULL && it->T2() != NULL)
 		{
 			Point2D center1 = it->T1()->getCircumCircleCenter();
-			Point2D center2 = it->T2()->getCircumCircleCenter();
-
 			voronoi.push_back(center1);
+			Point2D center2 = it->T2()->getCircumCircleCenter();
 			voronoi.push_back(center2);
 		}
 		else if (it->T1() != NULL && it->T2() == NULL)
 		{
+			//Cas d'une arête externe
+			Point2D center1 = it->T1()->getCircumCircleCenter();
+			voronoi.push_back(center1);
+			glm::vec2 normal;
+			if(!it->T1()->isClockwise())
+				normal = glm::vec2(it->p2.y - it->p1.y, -(it->p2.x, it->p1.x));
+			else
+				normal = glm::vec2(-(it->p2.y - it->p1.y), it->p2.x- it->p1.x);
+			Point2D center2;
+			glm::vec2 normalized = glm::normalize(normal);
+			if (it->T1()->containsPoint(Point(center1.x, center1.y)))
+				center2 = Point2D((it->GetCenter() + glm::normalize(normal)).x, (it->GetCenter() + glm::normalize(normal)).y);
+			else
+				center2 = Point2D(center1.x, center1.y);
+			
+
+			voronoi.push_back(center2);
 			//bool colineaire = false;
 			////parcours de tout les sommets / si pas colineaire break
 			//
@@ -440,6 +456,27 @@ void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi)
 			//	std::cout << "colineaire" << std::endl;
 			//}
 		}
+		else if (it->T1() == NULL && it->T2() != NULL)
+		{
+			//Cas d'une arête externe
+			Point2D center1 = it->T2()->getCircumCircleCenter();
+			voronoi.push_back(center1);
+			glm::vec2 normal;
+			if (!it->T2()->isClockwise())
+				normal = glm::vec2(it->p2.y - it->p1.y, -(it->p2.x, it->p1.x));
+			else
+				normal = glm::vec2(-(it->p2.y - it->p1.y), it->p2.x - it->p1.x);
+			Point2D center2;
+			glm::vec2 normalized = glm::normalize(normal);
+			if (it->T2()->containsPoint(Point(center1.x, center1.y)))
+				center2 = Point2D((it->GetCenter() + glm::normalize(normal)).x, (it->GetCenter() + glm::normalize(normal)).y);
+			else
+				center2 = Point2D(center1.x, center1.y);
+
+
+			voronoi.push_back(center2);
+		}
+
 	}
 }
 
