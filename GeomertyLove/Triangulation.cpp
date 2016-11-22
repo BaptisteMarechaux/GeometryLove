@@ -422,16 +422,28 @@ void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi)
 			Point2D center1 = it->T1()->getCircumCircleCenter();
 			voronoi.push_back(center1);
 			glm::vec2 normal;
-			if(!it->T1()->isClockwise())
+			if(it->T1()->isClockwise())
 				normal = glm::vec2(it->p2.y - it->p1.y, -(it->p2.x, it->p1.x));
 			else
 				normal = glm::vec2(-(it->p2.y - it->p1.y), it->p2.x- it->p1.x);
 			Point2D center2;
+			
 			glm::vec2 normalized = glm::normalize(normal);
+			glm::vec2 a = it->GetCenter() + normalized;
+			
 			if (it->T1()->containsPoint(Point(center1.x, center1.y)))
-				center2 = Point2D((it->GetCenter() + glm::normalize(normal)).x, (it->GetCenter() + glm::normalize(normal)).y);
+			{
+				//normalized = it->GetCenter() + (a - it->GetCenter());
+				//center2 = Point2D((it->GetCenter() + normalized).x, (it->GetCenter() + normalized).y);
+				normalized = it->GetCenter() - glm::vec2(it->T1()->getCircumCircleCenter().x, it->T1()->getCircumCircleCenter().y);
+				normalized = it->GetCenter() + glm::normalize(normalized) * 3000.f;
+				center2 = Point2D(normalized.x, normalized.y);
+			}
 			else
+			{
 				center2 = Point2D(center1.x, center1.y);
+
+			}
 			
 
 			voronoi.push_back(center2);
