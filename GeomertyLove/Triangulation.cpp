@@ -2,8 +2,6 @@
 #include "Math.h"
 #include <algorithm>
 
-
-
 Triangulation::Triangulation()
 {
 }
@@ -204,7 +202,87 @@ void Triangulation::Add(Point2D point2D)
 		}
 
 		//Cas B2
-		connectEdgesToNewPoint(point, listeAreteTemp, triangleToRemoveFound, triangleToRemove);
+		int j = 0;
+		while (listeAreteTemp.size() > 0)
+		{
+			Edge* testEdge = listeAreteTemp[0];
+			triangleToRemoveFound = false;
+			if (testEdge->T1() != NULL && !testEdge->T1()->circumCircleContains(point))
+			{
+				for (it = triangles.begin(); it != triangles.end(); ++it)
+				{
+					if (&(*it) == testEdge->T1())
+						triangleToRemove = it;
+				}
+			}
+			else if (testEdge->T2() != NULL && !testEdge->T2()->circumCircleContains(point))
+			{
+				for (it = triangles.begin(); it != triangles.end(); ++it)
+				{
+					if (&(*it) == testEdge->T2())
+						triangleToRemove = it;
+				}
+			}
+
+			if (triangleToRemoveFound != false)
+			{
+				if (testEdge == triangleToRemove->E1())
+				{
+					listeAreteTemp.push_back(triangleToRemove->E2());
+					listeAreteTemp.push_back(triangleToRemove->E3());
+				}
+				if (testEdge == triangleToRemove->E2())
+				{
+					listeAreteTemp.push_back(triangleToRemove->E1());
+					listeAreteTemp.push_back(triangleToRemove->E3());
+				}
+				if (testEdge == triangleToRemove->E3())
+				{
+					listeAreteTemp.push_back(triangleToRemove->E1());
+					listeAreteTemp.push_back(triangleToRemove->E2());
+				}
+
+				triangleToRemove->UnsetEgdeRefs();
+				triangles.erase(triangleToRemove);
+
+				aretes.erase(std::find(aretes.begin(), aretes.end(), *testEdge));
+				//for (int i = 0; i < aretes.size(); i++)
+				//{
+				//	if (&aretes[i] == testEdge)
+				//		aretes.erase(aretes.begin() + i);
+				//}
+			}
+			else
+			{
+				std::list<Edge>::iterator e2, e3;
+
+				Edge newEdge3(testEdge->p1, point);
+				e3 = std::find(aretes.begin(), aretes.end(), newEdge3);
+				if (e3 == aretes.end())
+				{
+					aretes.push_back(newEdge3);
+					e3 = --aretes.end();
+				}
+				Edge newEdge2(testEdge->p2, point);
+				e2 = std::find(aretes.begin(), aretes.end(), newEdge2);
+				if (e2 == aretes.end())
+				{
+					aretes.push_back(newEdge2);
+					e2 = --aretes.end();
+				}
+
+				triangles.push_back(Triangle(testEdge, &(*e2), &(*e3), testEdge->p1, testEdge->p2, point));
+				triangles.back().SetEgdeRefs();
+				//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
+			}
+			listeAreteTemp.erase(listeAreteTemp.begin());
+			j++;
+			if (j > aretes.size() * 2)
+			{
+				std::cout << "error" << std::endl;
+				break;
+			}
+		}
 		sommets.push_back(point);
 	}
 		
@@ -217,114 +295,6 @@ void Triangulation::Add(Point2D point2D)
 			aretesExt.push_back(&(*it));
 	}
 }
-
-void Triangulation::connectEdgesToNewPoint(Point point, std::vector<Edge*> listeAreteTemp, bool triangleToRemoveFound, std::list<Triangle>::iterator triangleToRemove)
-{
-	int j = 0;
-	std::list<Triangle>::iterator it;
-	while (listeAreteTemp.size() > 0)
-	{
-		Edge* testEdge = listeAreteTemp[0];
-		triangleToRemoveFound = false;
-		if (testEdge->T1() != NULL && !testEdge->T1()->circumCircleContains(point))
-		{
-			for (it = triangles.begin(); it != triangles.end(); ++it)
-			{
-				if (&(*it) == testEdge->T1())
-				{
-					triangleToRemove = it;
-				}
-					
-			}
-		}
-		else if (testEdge->T2() != NULL && !testEdge->T2()->circumCircleContains(point))
-		{
-			for (it = triangles.begin(); it != triangles.end(); ++it)
-			{
-				if (&(*it) == testEdge->T2())
-				{
-					triangleToRemove = it;
-				}
-					
-			}
-		}
-		else if (testEdge->T1() != NULL && testEdge->T1()->circumCircleContains(point) && testEdge->T2() == NULL)
-		{
-			for (it = triangles.begin(); it != triangles.end(); ++it)
-			{
-				if (&(*it) == testEdge->T1())
-				{
-					triangleToRemove = it;
-					break;
-				}
-
-			}
-			
-		}
-
-		if (triangleToRemoveFound != false)
-		{
-			if (testEdge == triangleToRemove->E1())
-			{
-				listeAreteTemp.push_back(triangleToRemove->E2());
-				listeAreteTemp.push_back(triangleToRemove->E3());
-			}
-			if (testEdge == triangleToRemove->E2())
-			{
-				listeAreteTemp.push_back(triangleToRemove->E1());
-				listeAreteTemp.push_back(triangleToRemove->E3());
-			}
-			if (testEdge == triangleToRemove->E3())
-			{
-				listeAreteTemp.push_back(triangleToRemove->E1());
-				listeAreteTemp.push_back(triangleToRemove->E2());
-			}
-
-			triangleToRemove->UnsetEgdeRefs();
-			triangles.erase(triangleToRemove);
-
-			aretes.erase(std::find(aretes.begin(), aretes.end(), *testEdge));
-			//for (int i = 0; i < aretes.size(); i++)
-			//{
-			//	if (&aretes[i] == testEdge)
-			//		aretes.erase(aretes.begin() + i);
-			//}
-			connectEdgesToNewPoint(point, listeAreteTemp, triangleToRemoveFound, triangleToRemove);
-			
-		}
-		else
-		{
-			std::list<Edge>::iterator e2, e3;
-
-			Edge newEdge3(testEdge->p1, point);
-			e3 = std::find(aretes.begin(), aretes.end(), newEdge3);
-			if (e3 == aretes.end())
-			{
-				aretes.push_back(newEdge3);
-				e3 = --aretes.end();
-			}
-			Edge newEdge2(testEdge->p2, point);
-			e2 = std::find(aretes.begin(), aretes.end(), newEdge2);
-			if (e2 == aretes.end())
-			{
-				aretes.push_back(newEdge2);
-				e2 = --aretes.end();
-			}
-
-			triangles.push_back(Triangle(testEdge, &(*e2), &(*e3), testEdge->p1, testEdge->p2, point));
-			triangles.back().SetEgdeRefs();
-			//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
-		}
-		listeAreteTemp.erase(listeAreteTemp.begin());
-		j++;
-		if (j > aretes.size() * 2)
-		{
-			std::cout << "error" << std::endl;
-			break;
-		}
-	}
-}
-
 
 void Triangulation::Delete(Point suppressedPoint)
 {
@@ -420,7 +390,6 @@ void Triangulation::Delete(Point suppressedPoint)
 		//}
 	}	//
 }
-
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
 {

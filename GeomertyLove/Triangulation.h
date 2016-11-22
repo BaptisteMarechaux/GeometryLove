@@ -13,8 +13,6 @@ class Triangulation
 		std::list<Edge>  aretes;
 		std::list<Triangle> triangles;
 
-		void connectEdgesToNewPoint(Point point, std::vector<Edge*> listeAreteTemp, bool triangleToRemoveFound, std::list<Triangle>::iterator triangleToRemove);
-
 	public:
 		Triangulation();
 
