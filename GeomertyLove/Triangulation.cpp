@@ -409,6 +409,7 @@ void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi)
 	std::list<Edge>::iterator it = aretes.begin();
 	for (; it != aretes.end(); ++it)
 	{
+		//Cas d'une arête interne
 		if (it->T1() != NULL && it->T2() != NULL)
 		{
 			Point2D center1 = it->T1()->getCircumCircleCenter();
@@ -416,82 +417,31 @@ void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi)
 			Point2D center2 = it->T2()->getCircumCircleCenter();
 			voronoi.push_back(center2);
 		}
-		else if (it->T1() != NULL && it->T2() == NULL)
+		//Cas d'une arête externe
+		else if (it->T1() != NULL && it->T2() == NULL || it->T1() == NULL && it->T2() != NULL)
 		{
-			//Cas d'une arête externe
-			Point2D center1 = it->T1()->getCircumCircleCenter();
-			voronoi.push_back(center1);
-			glm::vec2 normal;
-			if(it->T1()->isClockwise())
-				normal = glm::vec2(it->p2.y - it->p1.y, -(it->p2.x, it->p1.x));
+			Triangle *triangle;
+			if (it->T1() != NULL)
+				triangle = it->T1();
 			else
-				normal = glm::vec2(-(it->p2.y - it->p1.y), it->p2.x- it->p1.x);
-			Point2D center2;
-			
-			glm::vec2 normalized = glm::normalize(normal);
-			glm::vec2 a = it->GetCenter() + normalized;
-			
-			if (it->T1()->containsPoint(Point(center1.x, center1.y)))
-			{
-				//normalized = it->GetCenter() + (a - it->GetCenter());
-				//center2 = Point2D((it->GetCenter() + normalized).x, (it->GetCenter() + normalized).y);
-				normalized = it->GetCenter() - glm::vec2(it->T1()->getCircumCircleCenter().x, it->T1()->getCircumCircleCenter().y);
-				normalized = it->GetCenter() + glm::normalize(normalized) * 3000.f;
-				center2 = Point2D(normalized.x, normalized.y);
-			}
-			else
-			{
-				center2 = Point2D(center1.x, center1.y);
+				triangle = it->T2();
 
-			}
-			
-
-			voronoi.push_back(center2);
-			//bool colineaire = false;
-			////parcours de tout les sommets / si pas colineaire break
-			//
-			//if (it->T1()->E1()->p1.x * it->T1()->N1().y == it->T1()->E1()->p1.y * it->T1()->N1().x)
-			//{
-			//	colineaire = true;
-			//	break;
-			//}
-			//if (it->T1()->E2()->p1.x * it->T1()->N2().y == it->T1()->E2()->p1.y * it->T1()->N2().x)
-			//{
-			//	colineaire = true;
-			//	break;
-			//}
-			//if (it->T1()->E3()->p1.x * it->T1()->N3().y == it->T1()->E3()->p1.y * it->T1()->N3().x)
-			//{
-			//	colineaire = true;
-			//	break;
-			//}
-			////Point colineaire
-			//if (colineaire)
-			//{
-			//	std::cout << "colineaire" << std::endl;
-			//}
-		}
-		else if (it->T1() == NULL && it->T2() != NULL)
-		{
-			//Cas d'une arête externe
-			Point2D center1 = it->T2()->getCircumCircleCenter();
+			//on push le premier point (centre triangle)
+			Point2D center1;
+			center1 = triangle->getCircumCircleCenter();
 			voronoi.push_back(center1);
-			glm::vec2 normal;
-			if (!it->T2()->isClockwise())
-				normal = glm::vec2(it->p2.y - it->p1.y, -(it->p2.x, it->p1.x));
-			else
-				normal = glm::vec2(-(it->p2.y - it->p1.y), it->p2.x - it->p1.x);
+
+			//calcul normal
+			glm::vec2 normal = triangle->getNormal(&(*it));
+		
 			Point2D center2;
 			glm::vec2 normalized = glm::normalize(normal);
-			if (it->T2()->containsPoint(Point(center1.x, center1.y)))
-				center2 = Point2D((it->GetCenter() + glm::normalize(normal)).x, (it->GetCenter() + glm::normalize(normal)).y);
-			else
-				center2 = Point2D(center1.x, center1.y);
-
+			normalized *= -3000;
+			normalized = it->GetCenter() + normalized;
+			center2 = Point2D(normalized.x, normalized.y);
 
 			voronoi.push_back(center2);
 		}
-
 	}
 }
 
