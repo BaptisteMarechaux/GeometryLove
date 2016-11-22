@@ -207,12 +207,16 @@ void Triangulation::Add(Point2D point2D)
 		{
 			Edge* testEdge = listeAreteTemp[0];
 			triangleToRemoveFound = false;
-			if (testEdge->T1() != NULL && !testEdge->T1()->circumCircleContains(point))
+			if (testEdge->T1() != NULL && testEdge->T1()->circumCircleContains(point))
 			{
 				for (it = triangles.begin(); it != triangles.end(); ++it)
 				{
 					if (&(*it) == testEdge->T1())
+					{
 						triangleToRemove = it;
+						triangleToRemoveFound = true;
+					}
+						
 				}
 			}
 			else if (testEdge->T2() != NULL && !testEdge->T2()->circumCircleContains(point))
