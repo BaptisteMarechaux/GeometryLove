@@ -215,6 +215,7 @@ void Triangulation::Add(Point2D point2D)
 					{
 						triangleToRemove = it;
 						triangleToRemoveFound = true;
+						break;
 					}
 						
 				}
@@ -224,7 +225,11 @@ void Triangulation::Add(Point2D point2D)
 				for (it = triangles.begin(); it != triangles.end(); ++it)
 				{
 					if (&(*it) == testEdge->T2())
+					{
 						triangleToRemove = it;
+						triangleToRemoveFound = true;
+						break;
+					}
 				}
 			}
 
@@ -280,12 +285,6 @@ void Triangulation::Add(Point2D point2D)
 				//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
 			}
 			listeAreteTemp.erase(listeAreteTemp.begin());
-			j++;
-			if (j > aretes.size() * 2)
-			{
-				std::cout << "error" << std::endl;
-				break;
-			}
 		}
 		sommets.push_back(point);
 	}
