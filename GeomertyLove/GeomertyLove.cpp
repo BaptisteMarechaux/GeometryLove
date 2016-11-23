@@ -1,5 +1,3 @@
-// GeomertyLove.cpp : Defines the entry point for the console application.
-//
 #include "stdafx.h"
 #include"imgui\imgui.h"
 #include "imgui_impl_glfw_gl3.h"
@@ -14,13 +12,6 @@
 #include "gtc\type_ptr.hpp"
 #include "Math.h"
 #include "Triangulation.h"
-
-
-struct Line
-{
-	float x1, y1;
-	float x2, y2;
-};
 
 std::vector<Point2D> points, hull;
 std::vector<Point2D> triangulation2D;
@@ -47,6 +38,13 @@ int index = 0, indexHull = 0;
 int nbFrames = 0;
 double lastTime = 0.0f;
 
+//Colors
+float fragmentColor[4];
+
+ImVec4 triangulation_color = ImColor(226, 117, 34);
+ImVec4 voronoi_color = ImColor(34, 53, 226);
+ImVec4 hull_color = ImColor(226, 117, 34);
+
 float last_mousex, last_mousey, last_mousez;
 float first_mousex, first_mousey;
 float last_movex, last_movey;
@@ -62,9 +60,12 @@ static bool triangulationEnabled = true;
 static bool movePointEnabled = false;
 static bool convexHull = false;
 static bool voronoiEnabled = false;
+static bool enhanceTriangulation = false;
+static bool enhanceVoronoi = false;
 
 void Initialize();
-void majPoints();
+void majBuffer(int vertexBuffer, std::vector<Point2D> &vecteur);
+void setColorToFragment(ImVec4 &color);
 
 //reload entirely the triangulation
 void reloadTriangulation();
@@ -108,9 +109,9 @@ void Render()
 	else if(!jarvisMarchEnabled && !grahamScanEnabled)
 		convexHull = false;
 
-	float fragmentColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
-	glProgramUniform4fv(program, color_location, 1, fragmentColor);
 
+	setColorToFragment(ImVec4(1, 0, 0, 1));
+	//points display
 	if (points.size() > 0)
 	{
 		glBindVertexArray(vaoPoints);
@@ -119,12 +120,16 @@ void Render()
 	}
 
 	//triangulation display
+	setColorToFragment(triangulation_color);
 	if (triangulation2D.size() > 0 && triangulationEnabled)
 	{
+		if (enhanceTriangulation)
+			glLineWidth(4);
 		glBindVertexArray(vaoDelaunay);
 		glDrawArrays(GL_LINES, 0, triangulation2D.size());
 		glBindVertexArray(0);
 
+		glLineWidth(1);
 		/*Normals debug*/
 		std::vector<glm::vec2> centers;
 		std::vector<glm::vec2> normalEdges;
@@ -137,8 +142,7 @@ void Render()
 			glm::vec2 point = centers[i] + glm::normalize(normalEdges[i]) * 30.0f;
 			normals.push_back(Point2D(point.x, point.y));
 		}
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferNormal);
-		glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(Point2D), normals.data(), GL_STATIC_DRAW);
+		majBuffer(vertexBufferNormal, normals);
 
 		glBindVertexArray(vaoNormals);
 		glDrawArrays(GL_LINES, 0, normals.size());
@@ -146,9 +150,7 @@ void Render()
 
 		if (extPoints.size() > 0)
 		{
-			float fragmentColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
-			glProgramUniform4fv(program, color_location, 1, fragmentColor);
-
+			setColorToFragment(ImVec4(1,1,0,1));
 			glBindVertexArray(vaoExt);
 			glDrawArrays(GL_LINES, 0, extPoints.size());
 			glBindVertexArray(0);
@@ -156,17 +158,18 @@ void Render()
 
 		if (voronoi.size() > 1 && voronoiEnabled)
 		{
-			float fragmentColor[4] = { 0.0f, 1.0f, 1.0f, 1.0f };
-			glProgramUniform4fv(program, color_location, 1, fragmentColor);
-
+			if (enhanceVoronoi)
+				glLineWidth(4);
+			setColorToFragment(voronoi_color);
 			glBindVertexArray(vaoVoronoi);
 			glDrawArrays(GL_LINES, 0, voronoi.size());
 			glDrawArrays(GL_POINTS, 0, voronoi.size());
 			glBindVertexArray(0);
 		}
 	}
-	
 
+	glLineWidth(1);
+	setColorToFragment(hull_color);
 	if (hull.size() > 0 && jarvisMarchEnabled)
 	{
 		glBindVertexArray(vaoHull);
@@ -187,47 +190,22 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 	glfwGetCursorPos(window, &x, &y);
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && drawPoints && ImGui::IsMouseHoveringAnyWindow() == 0)
 	{
-		std::cout << "Point " << x << " " << y << std::endl;
 		Point2D point(x, y);
 		points.push_back(point);
 
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
+		majBuffer(vertexBufferPoints, points);
 
 		if (jarvisMarchEnabled || grahamScanEnabled)
 		{
 			hull = jarvisMarchEnabled ? jarvisMarch(points) : (grahamScanEnabled ? grahamScan(points) : jarvisMarch(points));
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
-			glBufferData(GL_ARRAY_BUFFER, hull.size() * sizeof(Point), hull.data(), GL_STATIC_DRAW);
+			majBuffer(vertexBufferHull, hull);
 		}
 
 		T.Add(point);
-		const std::list<Edge>& edges_temp = T.GetAretes();
-		triangulation2D.clear();
-
-		std::list<Edge>::const_iterator it = edges_temp.begin();
-		for (; it != edges_temp.end(); ++it)
-		{
-			triangulation2D.push_back(Point2D(it->p1.x, it->p1.y));
-			triangulation2D.push_back(Point2D(it->p2.x, it->p2.y));
-		}
-
-		//std::cout << std::endl;
-		//std::cout << "Aretes " << T.GetAretes().size() << std::endl;
-		//std::cout << "Sommets " << T.GetSommets().size() << std::endl;
-		//std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
-		//std::cout << std::endl;
-
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-		glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+		majTriangulation();
 
 		T.GetAllExtEdgesPoints(extPoints);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
-		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
-
-		T.GetVoronoi(voronoi);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-		glBufferData(GL_ARRAY_BUFFER, voronoi.size() * sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
+		majBuffer(vertexBufferExt, extPoints);
 	}
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && deletePoints && ImGui::IsMouseHoveringAnyWindow() == 0)
@@ -257,13 +235,12 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		{
 			points[_selectMovePoint].x = x;
 			points[_selectMovePoint].y = y;
+			majBuffer(vertexBufferPoints, points);
 
-			majPoints();
 			reloadTriangulation();
 
 			T.GetAllExtEdgesPoints(extPoints);
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
-			glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
+			majBuffer(vertexBufferExt, extPoints);
 
 			_selectMovePoint = -1;
 		}
@@ -278,14 +255,12 @@ void callbackMouseMove(GLFWwindow *window, double x, double y)
 	{
 		points[_selectMovePoint].x = last_mousex;
 		points[_selectMovePoint].y = last_mousey;
+		majBuffer(vertexBufferPoints, points);
 
-		majPoints();
 		reloadTriangulation();
 
-
 		T.GetAllExtEdgesPoints(extPoints);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
-		glBufferData(GL_ARRAY_BUFFER, extPoints.size() * sizeof(Point2D), extPoints.data(), GL_STATIC_DRAW);
+		majBuffer(vertexBufferExt, extPoints);
 	}
 }
 
@@ -294,10 +269,11 @@ int main(int, char**)
 	bool show_test_window = true;
 	bool reset = false;
 	bool show_another_window = false;
-	ImVec4 clear_color = ImColor(114, 144, 154);
+	ImVec4 clear_color = ImColor(53, 53, 57);
 
 	Initialize();
 	glEnable(GL_CULL_FACE);
+	glEnable(GL_LINE_SMOOTH);
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -308,12 +284,23 @@ int main(int, char**)
 		ImGui::Begin("Convex Hull & Voronoi");
 		ImGui::Text("This window is here to use the application!");
 
+		ImGui::Columns(2, "mixed");
+		ImGui::Separator();
 		ImGui::Checkbox("Triangulation", &triangulationEnabled);
+		ImGui::Checkbox("Enhance Triangulation", &enhanceTriangulation);
+
+		ImGui::NextColumn();
 		ImGui::Checkbox("Voronoi", &voronoiEnabled);
+		ImGui::Checkbox("Enhance Voronoi", &enhanceVoronoi);
+
+		ImGui::Columns(1);
+		ImGui::Separator();
+
 		ImGui::Columns(2, "mixed");
 		ImGui::Separator();
 
 		ImGui::Text("Enveloppe convexe");
+
 		//Modes de sélection d'enveloppe convexe
 		//On ne peut choisir qu'un seul de ces modes à la fois
 		if (!triangulationEnabled)
@@ -322,7 +309,6 @@ int main(int, char**)
 			{
 				ImGui::Checkbox("Jarvis March", &jarvisMarchEnabled);
 				ImGui::Checkbox("Graham Scan", &grahamScanEnabled);
-				ImGui::Checkbox("Divide and Conquer", &divideAndConquerEnabled);
 			}
 			else
 			{
@@ -330,8 +316,6 @@ int main(int, char**)
 					ImGui::Checkbox("Jarvis March", &jarvisMarchEnabled);
 				else if (grahamScanEnabled)
 					ImGui::Checkbox("Graham Scan", &grahamScanEnabled);
-				else if (divideAndConquerEnabled)
-					ImGui::Checkbox("Divide and Conquer", &divideAndConquerEnabled);
 			}
 		}
 		ImGui::NextColumn();
@@ -348,8 +332,12 @@ int main(int, char**)
 		ImGui::Separator();
 
 		if (ImGui::Button("Reset")) reset ^= 1;
-		ImGui::ColorEdit3("Clear color", (float*)&clear_color);
 		if (ImGui::Button("Test Window")) show_test_window ^= 1;
+
+		ImGui::ColorEdit3("Triangulation color", (float*)&triangulation_color);
+		ImGui::ColorEdit3("Voronoi color", (float*)&voronoi_color);
+		ImGui::ColorEdit3("Convex hull color", (float*)&hull_color);
+
 		ImGui::End();
 
 		static bool p_open = true;
@@ -375,22 +363,18 @@ int main(int, char**)
 			T.Reset();
 
 			points.clear();
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), points.data(), GL_STATIC_DRAW);
+			majBuffer(vertexBufferPoints, points);
 
 			hull.clear();
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferHull);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), hull.data(), GL_STATIC_DRAW);
+			majBuffer(vertexBufferHull, hull);
 
 			triangulation2D.clear();
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
+			majBuffer(vertexBufferDelaunay, triangulation2D);
 
-			glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-			glBufferData(GL_ARRAY_BUFFER, sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
+			voronoi.clear();
+			majBuffer(vertexBufferVoronoi, voronoi);
+
 			reset = false;
-
-			std::cout << std::endl << std::endl << std::endl << std::endl;
 		}
 
 		// Rendering
@@ -436,25 +420,10 @@ void Initialize()
 	// Setup ImGui binding
 	ImGui_ImplGlfwGL3_Init(window, true);
 
-	// Load Fonts
-	// (there is a default font, this is only if you want to change it. see extra_fonts/README.txt for more details)
-	//ImGuiIO& io = ImGui::GetIO();
-	//io.Fonts->AddFontDefault();
-	//io.Fonts->AddFontFromFileTTF("../../extra_fonts/Cousine-Regular.ttf", 15.0f);
-	//io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesJapanese());
-
-	//glfwSetKeyCallback(window, key_callback);
 	glfwSetMouseButtonCallback(window, callbackMousePos);
 	glfwSetCursorPosCallback(window, callbackMouseMove);
 
 	program = LoadShaders("..\\shaders\\simple.vs", "..\\shaders\\simple.fs");
-
-	GLfloat vertices[] = {
-		width/2, height, 0.0f,
-		0.0f, 0.0, 0.0f,
-		width, 0, 0.0f,
-	};
-
 	_selectMovePoint = -1;
 
 	mvp_location = glGetUniformLocation(program, "MVP");
@@ -526,15 +495,6 @@ void Initialize()
 	glBindVertexArray(0);
 }
 
-
-void majPoints()
-{
-	glBindVertexArray(vaoPoints);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferPoints);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * points.size(), points.data(), GL_STATIC_DRAW);
-	glBindVertexArray(0);
-}
-
 void reloadTriangulation()
 {
 	T.Reset();
@@ -543,7 +503,6 @@ void reloadTriangulation()
 
 	majTriangulation();
 }
-
 
 void majTriangulation()
 {
@@ -555,16 +514,22 @@ void majTriangulation()
 		triangulation2D.push_back(Point2D(it->p1.x, it->p1.y));
 		triangulation2D.push_back(Point2D(it->p2.x, it->p2.y));
 	}
-
-	glBindVertexArray(vaoDelaunay);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
-	glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
-	glBindVertexArray(0);
-
+	majBuffer(vertexBufferDelaunay, triangulation2D);
 	T.GetVoronoi(voronoi);
-	glBindVertexArray(vaoVoronoi);
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
-	glBufferData(GL_ARRAY_BUFFER, voronoi.size() * sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
-	glBindVertexArray(0);
+	majBuffer(vertexBufferVoronoi, voronoi);
+}
 
+void majBuffer(int vertexBuffer, std::vector<Point2D> &vecteur)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(Point) * vecteur.size(), vecteur.data(), GL_STATIC_DRAW);
+}
+
+void setColorToFragment(ImVec4 &color)
+{
+	fragmentColor[0] = color.x;
+	fragmentColor[1] = color.y;
+	fragmentColor[2] = color.z;
+	fragmentColor[3] = color.w;
+	glProgramUniform4fv(program, color_location, 1, fragmentColor);
 }
