@@ -161,10 +161,6 @@ void Render()
 
 			glBindVertexArray(vaoVoronoi);
 			glDrawArrays(GL_LINES, 0, voronoi.size());
-			/*for (auto i = 0; i < voronoi.size(); i+=2)
-			{
-				glDrawArrays(GL_LINES, i, 2);
-			}*/
 			glDrawArrays(GL_POINTS, 0, voronoi.size());
 			glBindVertexArray(0);
 		}
@@ -285,6 +281,7 @@ void callbackMouseMove(GLFWwindow *window, double x, double y)
 
 		majPoints();
 		reloadTriangulation();
+
 
 		T.GetAllExtEdgesPoints(extPoints);
 		glBindBuffer(GL_ARRAY_BUFFER, vertexBufferExt);
@@ -563,4 +560,11 @@ void majTriangulation()
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferDelaunay);
 	glBufferData(GL_ARRAY_BUFFER, triangulation2D.size() * sizeof(Point2D), triangulation2D.data(), GL_STATIC_DRAW);
 	glBindVertexArray(0);
+
+	T.GetVoronoi(voronoi);
+	glBindVertexArray(vaoVoronoi);
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferVoronoi);
+	glBufferData(GL_ARRAY_BUFFER, voronoi.size() * sizeof(Point2D), voronoi.data(), GL_STATIC_DRAW);
+	glBindVertexArray(0);
+
 }
