@@ -314,7 +314,7 @@ void Triangulation::Delete(Point suppressedPoint)
 		//Polygone ouvert
 	std::list<Triangle> incidentTriangles;
 	std::list<Edge> incidentEdges;
-	auto affectedEdges = std::vector<Edge>(); //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point
+	auto affectedEdges = std::vector<Edge>(); //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point : La2
 
 	if (triangles.size() <= 0)
 	{
@@ -373,25 +373,67 @@ void Triangulation::Delete(Point suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
 
-		//while (affectedEdges.size() > 3)
-		//{
-		//	for (int i = 0; i < affectedEdges.size(); i++)
-		//	{
-		//		if (affectedEdges[i].T1() != NULL)
-		//		{
-		//			if (affectedEdges[i].T1()->circumCircleContains(affectedEdges[i].p1))
-		//			{
-		//
-		//			}
-		//			else if(affectedEdges[i].T1()->circumCircleContains(affectedEdges[i].p2))
-		//			{
-		//
-		//			}
-		//
-		//		}
-		//	}
-		//}
-	}	//
+		if (true) //Cas du polygone fermé
+		{
+			auto sIndex=0;
+			
+			while (affectedEdges.size() > 3)
+			{
+				bool canAddTriangle=true;
+				Edge *First, *Second, *Third; //Edges constituant un triangle à ajouter à la liste
+				Point p1, p2, p3; //points consituant un triangle à ajouter à la liste
+				for (auto i = 0; i < affectedEdges.size(); i++)
+				{
+					
+					
+
+					First = new Edge(affectedEdges[i]);
+					p1 = affectedEdges[i].p1;
+					for (auto j = 0; j < affectedEdges.size(); j++)
+					{
+						if (affectedEdges[i].p2 == affectedEdges[j].p1) //on vérifie si on trouve un sommet convexe incident
+						{
+							Second = new Edge(affectedEdges[j]);
+							Third = new Edge(affectedEdges[j].p2, affectedEdges[i].p1);
+							p2 = affectedEdges[j].p1;
+							p3 = affectedEdges[j].p2;
+							break;
+						}
+					}
+					Triangle t = Triangle(First, Second, Third, p1, p2, p3);
+					for (auto j = 0; j < affectedEdges.size(); j++)
+					{
+						if (
+							affectedEdges[i].p1 != t.P1() && affectedEdges[i].p1 != t.P2() && affectedEdges[i].p1 != t.P3() &&
+							affectedEdges[i].p2 != t.P1() && affectedEdges[i].p2 != t.P2() && affectedEdges[i].p2 != t.P3()
+							)
+						{
+							if (t.circumCircleContains(affectedEdges[i].p1) || t.circumCircleContains(affectedEdges[i].p2))
+							{
+								canAddTriangle = false;
+							}
+						}
+					}
+				}
+				if (canAddTriangle)
+				{
+					triangles.push_back(Triangle(First, Second, Third, p1, p2, p3));
+					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), *First));
+					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), *Second));
+					affectedEdges.push_back(*Third);
+				}
+			}
+			//il devrait rester 3 edges
+			triangles.push_back(Triangle(new Edge(affectedEdges[0]), new Edge(affectedEdges[1]), new Edge(affectedEdges[2]), affectedEdges[0].p1, affectedEdges[1].p1, affectedEdges[2].p1));
+		
+		}
+		else
+		{
+			
+		}
+		
+		
+	}
 }
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
