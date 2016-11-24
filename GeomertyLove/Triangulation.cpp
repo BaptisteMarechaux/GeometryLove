@@ -42,7 +42,11 @@ void Triangulation::GetAllExtEdgesPoints(std::vector<Point2D> &returnPoints)
 void Triangulation::Add(Point2D point2D)
 {
 	Point point = (Point)point2D;
-	//Cas A (T ne contient pas de triangles)
+	bool find = false;
+	find = std::find(sommets.begin(), sommets.end(), point) != sommets.end();
+	if (find)
+		return;
+
 	if (triangles.size() == 0)
 	{
 		if (sommets.size() == 0)
@@ -198,7 +202,6 @@ void Triangulation::Add(Point2D point2D)
 				if (checkVisibilityEdge(*aretesExt[i], point))
 					listeAreteTemp.push_back(aretesExt[i]);
 			}
-			//std::cout << "aretes vues " << listeAreteTemp.size() << std::endl;
 		}
 
 		//Cas B2
@@ -255,11 +258,6 @@ void Triangulation::Add(Point2D point2D)
 				triangles.erase(triangleToRemove);
 
 				aretes.erase(std::find(aretes.begin(), aretes.end(), *testEdge));
-				//for (int i = 0; i < aretes.size(); i++)
-				//{
-				//	if (&aretes[i] == testEdge)
-				//		aretes.erase(aretes.begin() + i);
-				//}
 			}
 			else
 			{
@@ -282,7 +280,6 @@ void Triangulation::Add(Point2D point2D)
 
 				triangles.push_back(Triangle(testEdge, &(*e2), &(*e3), testEdge->p1, testEdge->p2, point));
 				triangles.back().SetEgdeRefs();
-				//triangles.push_back(Triangle(testEdge.p2, testEdge.p1, point));
 			}
 			listeAreteTemp.erase(listeAreteTemp.begin());
 		}
@@ -338,7 +335,7 @@ void Triangulation::Delete(Point suppressedPoint)
 				if (suppressedPoint == it->E2()->p1 || suppressedPoint == it->E2()->p2)
 					incidentEdges.push_back(*(it)->E2());
 				else
-					incidentEdges.push_back(*(it)->E2());
+					affectedEdges.push_back(*(it)->E2());
 
 				if (suppressedPoint == it->E3()->p1 || suppressedPoint == it->E3()->p2)
 					incidentEdges.push_back(*(it)->E3());
@@ -378,7 +375,7 @@ void Triangulation::Delete(Point suppressedPoint)
 		for (unsigned int i = 0; i < affectedEdges.size();i++)
 		{
 			checked = false;
-			for (unsigned int j = 0; j < affectedEdges.size(); i++)
+			for (unsigned int j = 0; j < affectedEdges.size(); j++)
 			{
 				if (!(affectedEdges[i] == affectedEdges[j]))
 				{
@@ -388,10 +385,11 @@ void Triangulation::Delete(Point suppressedPoint)
 					}
 				}
 			}
-			if (checked == false)
-			{
-				isClosedPolygon = false;
-			}
+			isClosedPolygon = checked;
+			//if (checked == false)
+			//{
+			//	isClosedPolygon = false;
+			//}
 		}
 
 		if (isClosedPolygon) //Cas du polygone fermé
@@ -455,8 +453,15 @@ void Triangulation::Delete(Point suppressedPoint)
 					affectedEdges.push_back(*Third);
 				}
 			}
+
+			Point p1 = affectedEdges[0].p1;
+			Point p2 = affectedEdges[1].p1;
+			Point p3 = affectedEdges[2].p1;
+
 			//il devrait rester 3 edges
 			triangles.push_back(Triangle(new Edge(affectedEdges[0]), new Edge(affectedEdges[1]), new Edge(affectedEdges[2]), affectedEdges[0].p1, affectedEdges[1].p1, affectedEdges[2].p1));
+			triangles.back().SetEgdeRefs();
+
 		
 		}
 		else
