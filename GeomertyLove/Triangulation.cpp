@@ -384,9 +384,6 @@ void Triangulation::Delete(Point suppressedPoint)
 				Point p1, p2, p3; //points consituant un triangle à ajouter à la liste
 				for (auto i = 0; i < affectedEdges.size(); i++)
 				{
-					
-					
-
 					First = new Edge(affectedEdges[i]);
 					p1 = affectedEdges[i].p1;
 					for (auto j = 0; j < affectedEdges.size(); j++)
@@ -397,6 +394,14 @@ void Triangulation::Delete(Point suppressedPoint)
 							Third = new Edge(affectedEdges[j].p2, affectedEdges[i].p1);
 							p2 = affectedEdges[j].p1;
 							p3 = affectedEdges[j].p2;
+							break;
+						}
+						if (affectedEdges[i].p2 == affectedEdges[j].p2)
+						{
+							Second = new Edge(affectedEdges[j]);
+							Third = new Edge(affectedEdges[j].p1, affectedEdges[i].p1);
+							p2 = affectedEdges[j].p2;
+							p3 = affectedEdges[j].p1;
 							break;
 						}
 					}
@@ -418,6 +423,12 @@ void Triangulation::Delete(Point suppressedPoint)
 				if (canAddTriangle)
 				{
 					triangles.push_back(Triangle(First, Second, Third, p1, p2, p3));
+					aretes.push_back(*First);
+					aretes.push_back(*Second);
+					aretes.push_back(*Third);
+					sommets.push_back(p1);
+					sommets.push_back(p2);
+					sommets.push_back(p3);
 					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), *First));
 					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), *Second));
 					affectedEdges.push_back(*Third);
