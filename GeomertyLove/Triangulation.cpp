@@ -373,7 +373,28 @@ void Triangulation::Delete(Point suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
 
-		if (true) //Cas du polygone fermé
+		bool isClosedPolygon = true;
+		bool checked = true;
+		for (unsigned int i = 0; i < affectedEdges.size();i++)
+		{
+			checked = false;
+			for (unsigned int j = 0; j < affectedEdges.size(); i++)
+			{
+				if (!(affectedEdges[i] == affectedEdges[j]))
+				{
+					if (affectedEdges[i].p1 == affectedEdges[j].p1 || affectedEdges[i].p1 == affectedEdges[j].p2 || affectedEdges[i].p2 == affectedEdges[j].p1 || affectedEdges[i].p2 == affectedEdges[j].p2)
+					{
+						checked = true;
+					}
+				}
+			}
+			if (checked == false)
+			{
+				isClosedPolygon = false;
+			}
+		}
+
+		if (isClosedPolygon) //Cas du polygone fermé
 		{
 			auto sIndex=0;
 			
