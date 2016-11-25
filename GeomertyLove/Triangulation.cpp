@@ -309,9 +309,9 @@ void Triangulation::Delete(Point suppressedPoint)
 		//Polygone fermé
 
 		//Polygone ouvert
-	std::list<Triangle> incidentTriangles;
-	std::list<Edge> incidentEdges;
-	auto affectedEdges = std::vector<Edge>(); //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point : La2
+	std::vector<Triangle*> incidentTriangles;
+	std::vector<Edge*> incidentEdges;
+	std::vector<Edge*> affectedEdges; //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point : La2
 
 	if (triangles.size() <= 0)
 	{
@@ -325,41 +325,40 @@ void Triangulation::Delete(Point suppressedPoint)
 		{
 			if (suppressedPoint == it->P1() || suppressedPoint == it->P2() || suppressedPoint == it->P3())
 			{
-				incidentTriangles.push_back(*(it));
-				
+				incidentTriangles.push_back(&(*(it)));
+
 				if (suppressedPoint == it->E1()->p1 || suppressedPoint == it->E1()->p2)
-					incidentEdges.push_back(*(it)->E1());
+					incidentEdges.push_back(&(*(it)->E1()));
 				else
-					affectedEdges.push_back(*(it)->E1());
+					affectedEdges.push_back(&(*(it)->E1()));
 
 				if (suppressedPoint == it->E2()->p1 || suppressedPoint == it->E2()->p2)
-					incidentEdges.push_back(*(it)->E2());
+					incidentEdges.push_back(&(*(it)->E2()));
 				else
-					affectedEdges.push_back(*(it)->E2());
+					affectedEdges.push_back(&(*(it)->E2()));
 
 				if (suppressedPoint == it->E3()->p1 || suppressedPoint == it->E3()->p2)
-					incidentEdges.push_back(*(it)->E3());
+					incidentEdges.push_back(&(*(it)->E3()));
 				else
-					affectedEdges.push_back(*(it)->E3());
+					affectedEdges.push_back(&(*(it)->E3()));
 			}
 		}
 
-		std::list<Triangle>::iterator itIncidentTriangle = incidentTriangles.begin();
-		for (; itIncidentTriangle != incidentTriangles.end(); ++itIncidentTriangle)
+		for (int i = 0; i < incidentTriangles.size(); i++)
 		{
 			std::list<Triangle>::iterator triangleToRemove;
-			triangleToRemove = std::find(triangles.begin(), triangles.end(), *itIncidentTriangle);
+			triangleToRemove = std::find(triangles.begin(), triangles.end(), *incidentTriangles[i]);
 			if (triangleToRemove != triangles.end())
 			{
 				triangleToRemove->UnsetEgdeRefs();
 				triangles.erase(triangleToRemove);
 			}
 		}
-		std::list<Edge>::iterator itIncidentEdges = incidentEdges.begin();
-		for (; itIncidentEdges != incidentEdges.end(); ++itIncidentEdges)
+
+		for (int i = 0; i < incidentTriangles.size(); i++)
 		{
 			std::list<Edge>::iterator edgeToRemove;
-			edgeToRemove = std::find(aretes.begin(), aretes.end(), *itIncidentEdges);
+			edgeToRemove = std::find(aretes.begin(), aretes.end(), *incidentEdges[i]);
 			if (edgeToRemove != aretes.end())
 				aretes.erase(edgeToRemove);
 		}
@@ -379,7 +378,7 @@ void Triangulation::Delete(Point suppressedPoint)
 			{
 				if (!(affectedEdges[i] == affectedEdges[j]))
 				{
-					if (affectedEdges[i].p1 == affectedEdges[j].p1 || affectedEdges[i].p1 == affectedEdges[j].p2 || affectedEdges[i].p2 == affectedEdges[j].p1 || affectedEdges[i].p2 == affectedEdges[j].p2)
+					if (affectedEdges[i]->p1 == affectedEdges[j]->p1 || affectedEdges[i]->p1 == affectedEdges[j]->p2 || affectedEdges[i]->p2 == affectedEdges[j]->p1 || affectedEdges[i]->p2 == affectedEdges[j]->p2)
 					{
 						checked = true;
 					}
@@ -391,7 +390,7 @@ void Triangulation::Delete(Point suppressedPoint)
 			//	isClosedPolygon = false;
 			//}
 		}
-
+		
 		if (isClosedPolygon) //Cas du polygone fermé
 		{
 			auto sIndex=0;
@@ -403,24 +402,24 @@ void Triangulation::Delete(Point suppressedPoint)
 				Point p1, p2, p3; //points consituant un triangle à ajouter à la liste
 				for (auto i = 0; i < affectedEdges.size(); i++)
 				{
-					First = new Edge(affectedEdges[i]);
-					p1 = affectedEdges[i].p1;
+					First = affectedEdges[i];
+					p1 = affectedEdges[i]->p1;
 					for (auto j = 0; j < affectedEdges.size(); j++)
 					{
-						if (affectedEdges[i].p2 == affectedEdges[j].p1) //on vérifie si on trouve un sommet convexe incident
+						if (affectedEdges[i]->p2 == affectedEdges[j]->p1) //on vérifie si on trouve un sommet convexe incident
 						{
-							Second = new Edge(affectedEdges[j]);
-							Third = new Edge(affectedEdges[j].p2, affectedEdges[i].p1);
-							p2 = affectedEdges[j].p1;
-							p3 = affectedEdges[j].p2;
+							Second = affectedEdges[j];
+							Third = new Edge(affectedEdges[j]->p2, affectedEdges[i]->p1);
+							p2 = affectedEdges[j]->p1;
+							p3 = affectedEdges[j]->p2;
 							break;
 						}
-						if (affectedEdges[i].p2 == affectedEdges[j].p2)
+						if (affectedEdges[i]->p2 == affectedEdges[j]->p2)
 						{
-							Second = new Edge(affectedEdges[j]);
-							Third = new Edge(affectedEdges[j].p1, affectedEdges[i].p1);
-							p2 = affectedEdges[j].p2;
-							p3 = affectedEdges[j].p1;
+							Second = affectedEdges[j];
+							Third = new Edge(affectedEdges[j]->p1, affectedEdges[i]->p1);
+							p2 = affectedEdges[j]->p2;
+							p3 = affectedEdges[j]->p1;
 							break;
 						}
 					}
@@ -428,11 +427,11 @@ void Triangulation::Delete(Point suppressedPoint)
 					for (auto j = 0; j < affectedEdges.size(); j++)
 					{
 						if (
-							affectedEdges[i].p1 != t.P1() && affectedEdges[i].p1 != t.P2() && affectedEdges[i].p1 != t.P3() &&
-							affectedEdges[i].p2 != t.P1() && affectedEdges[i].p2 != t.P2() && affectedEdges[i].p2 != t.P3()
+							affectedEdges[i]->p1 != t.P1() && affectedEdges[i]->p1 != t.P2() && affectedEdges[i]->p1 != t.P3() &&
+							affectedEdges[i]->p2 != t.P1() && affectedEdges[i]->p2 != t.P2() && affectedEdges[i]->p2 != t.P3()
 							)
 						{
-							if (t.circumCircleContains(affectedEdges[i].p1) || t.circumCircleContains(affectedEdges[i].p2))
+							if (t.circumCircleContains(affectedEdges[i]->p1) || t.circumCircleContains(affectedEdges[i]->p2))
 							{
 								canAddTriangle = false;
 							}
@@ -448,28 +447,27 @@ void Triangulation::Delete(Point suppressedPoint)
 					sommets.push_back(p1);
 					sommets.push_back(p2);
 					sommets.push_back(p3);
-					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), *First));
-					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), *Second));
-					affectedEdges.push_back(*Third);
+					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), First));
+					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), Second));
+					affectedEdges.push_back(Third);
 				}
 			}
+		
+			//inversion du dernier edge
+			Point s1 = affectedEdges[2]->p1;
+			Point s2 = affectedEdges[2]->p2;
 
-			Point p1 = affectedEdges[0].p1;
-			Point p2 = affectedEdges[1].p1;
-			Point p3 = affectedEdges[2].p1;
+			affectedEdges[2]->p1 = s2;
+			affectedEdges[2]->p2 = s1;
 
 			//il devrait rester 3 edges
-			triangles.push_back(Triangle(new Edge(affectedEdges[0]), new Edge(affectedEdges[1]), new Edge(affectedEdges[2]), affectedEdges[0].p1, affectedEdges[1].p1, affectedEdges[2].p1));
+			triangles.push_back(Triangle(affectedEdges[0], affectedEdges[1], affectedEdges[2], affectedEdges[0]->p1, affectedEdges[1]->p1, affectedEdges[2]->p1));
 			triangles.back().SetEgdeRefs();
-
-		
 		}
 		else
 		{
 			
 		}
-		
-		
 	}
 }
 
