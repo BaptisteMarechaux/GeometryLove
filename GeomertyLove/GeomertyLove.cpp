@@ -63,7 +63,8 @@ static bool voronoiEnabled = false;
 static bool enhanceTriangulation = false;
 static bool enhanceVoronoi = false;
 
-void Initialize();
+void initialize();
+void windowResize(GLFWwindow* window, int width, int height);
 void majBuffer(int vertexBuffer, std::vector<Point2D> &vecteur);
 void setColorToFragment(ImVec4 &color);
 
@@ -271,7 +272,7 @@ int main(int, char**)
 	bool show_another_window = false;
 	ImVec4 clear_color = ImColor(53, 53, 57);
 
-	Initialize();
+	initialize();
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_LINE_SMOOTH);
 
@@ -396,7 +397,7 @@ int main(int, char**)
     return 0;
 }
 
-void Initialize()
+void initialize()
 {
 	// Setup window
 	width = 1600;
@@ -414,6 +415,7 @@ void Initialize()
 #endif
 
 	window = glfwCreateWindow(width, height, "Geometry Love", NULL, NULL);
+	glfwSetWindowSizeCallback(window, windowResize);
 	glfwMakeContextCurrent(window);
 	gl3wInit();
 
@@ -532,4 +534,11 @@ void setColorToFragment(ImVec4 &color)
 	fragmentColor[2] = color.z;
 	fragmentColor[3] = color.w;
 	glProgramUniform4fv(program, color_location, 1, fragmentColor);
+}
+
+void windowResize(GLFWwindow* window, int w, int h)
+{
+	width = w;
+	height = h;
+	glViewport(0, 0, width, height);
 }
