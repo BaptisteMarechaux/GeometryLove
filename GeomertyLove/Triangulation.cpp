@@ -369,26 +369,42 @@ void Triangulation::Delete(Point suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
 
-		bool isClosedPolygon = true;
-		bool checked = true;
-		for (unsigned int i = 0; i < affectedEdges.size();i++)
+		bool isClosedPolygon = true; //On peut simplifier en enlevant cette variable
+		int checked = 0;
+
+		//On va calculer le nombre d'occurences de chaque point
+		//Si un seul point n'apparait qu'une seule fois dans la liste, alors la liste est ouverte
+		for (unsigned int i = 0; i < affectedEdges.size(); i++)
 		{
-			checked = false;
+			checked = 1;
 			for (unsigned int j = 0; j < affectedEdges.size(); j++)
 			{
-				if (!(affectedEdges[i] == affectedEdges[j]))
+				if (affectedEdges[i] != affectedEdges[j])
 				{
-					if (affectedEdges[i]->p1 == affectedEdges[j]->p1 || affectedEdges[i]->p1 == affectedEdges[j]->p2 || affectedEdges[i]->p2 == affectedEdges[j]->p1 || affectedEdges[i]->p2 == affectedEdges[j]->p2)
-					{
-						checked = true;
-					}
+					if (affectedEdges[i]->p1 == affectedEdges[j]->p1 || affectedEdges[i]->p1 == affectedEdges[j]->p2)
+						checked++;
+				}
+				
+			}
+			if (checked < 2)
+			{
+				isClosedPolygon = false;
+				break;
+			}
+			checked = 1;
+			for (unsigned int j = 0; j < affectedEdges.size(); j++)
+			{
+				if (affectedEdges[i] != affectedEdges[j])
+				{
+					if (affectedEdges[i]->p2 == affectedEdges[j]->p2 || affectedEdges[i]->p2 == affectedEdges[j]->p1)
+						checked++;
 				}
 			}
-			isClosedPolygon = checked;
-			//if (checked == false)
-			//{
-			//	isClosedPolygon = false;
-			//}
+			if (checked < 2)
+			{
+				isClosedPolygon = false;
+				break;
+			}
 		}
 		
 		if (isClosedPolygon) //Cas du polygone fermé
@@ -466,7 +482,72 @@ void Triangulation::Delete(Point suppressedPoint)
 		}
 		else
 		{
-			
+			std::cout << "Open Polygon" << std::endl;
+			bool canAddTriangle = true;
+			while(affectedEdges.size() >= 3 && canAddTriangle)
+			{
+				
+				Edge *First, *Second, *Third; //Edges constituant un triangle à ajouter à la liste
+				Point p1, p2, p3; //points consituant un triangle à ajouter à la liste
+				for (auto i = 0; i < affectedEdges.size(); i++)
+				{
+					First = affectedEdges[i];
+					p1 = affectedEdges[i]->p1;
+					for (auto j = 0; j < affectedEdges.size(); j++)
+					{
+						if (!(affectedEdges[i] == affectedEdges[j]))
+						{
+							if (affectedEdges[i]->p2 == affectedEdges[j]->p1) //on vérifie si on trouve un sommet convexe incident
+							{
+								Second = affectedEdges[j];
+								Third = new Edge(affectedEdges[j]->p2, affectedEdges[i]->p1);
+								p2 = affectedEdges[j]->p1;
+								p3 = affectedEdges[j]->p2;
+								break;
+							}
+							else if (affectedEdges[i]->p2 == affectedEdges[j]->p2)
+							{
+								Second = affectedEdges[j];
+								Third = new Edge(affectedEdges[j]->p1, affectedEdges[i]->p1);
+								p2 = affectedEdges[j]->p2;
+								p3 = affectedEdges[j]->p1;
+								break;
+							}
+						}
+						
+					}
+					Triangle t = Triangle(First, Second, Third, p1, p2, p3);
+					for (auto j = 0; j < affectedEdges.size(); j++)
+					{
+						if (
+							affectedEdges[i]->p1 != t.P1() && affectedEdges[i]->p1 != t.P2() && affectedEdges[i]->p1 != t.P3() &&
+							affectedEdges[i]->p2 != t.P1() && affectedEdges[i]->p2 != t.P2() && affectedEdges[i]->p2 != t.P3()
+							)
+						{
+							if (t.circumCircleContains(affectedEdges[i]->p1) || t.circumCircleContains(affectedEdges[i]->p2))
+							{
+								canAddTriangle = false;
+							}
+						}
+					}
+
+					if (!isConvexPoint(First->p1, Third->p2, First->p2))
+						canAddTriangle = false;
+					if (canAddTriangle)
+					{
+						triangles.push_back(Triangle(First, Second, Third, p1, p2, p3));
+						aretes.push_back(*First);
+						aretes.push_back(*Second);
+						aretes.push_back(*Third);
+						sommets.push_back(p1);
+						sommets.push_back(p2);
+						sommets.push_back(p3);
+						affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), First));
+						affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), Second));
+						affectedEdges.push_back(Third);
+					}
+				}
+			}
 		}
 	}
 }

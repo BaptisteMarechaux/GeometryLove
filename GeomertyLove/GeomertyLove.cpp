@@ -220,7 +220,13 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 			points.erase(points.begin() + _selectMovePoint);
 		}
 		//reloadTriangulation();
+		
+		//majBuffer(vertexBufferExt, extPoints);
+		//majBuffer(vertexBufferPoints, points);
 		majTriangulation();
+		T.GetAllExtEdgesPoints(extPoints);
+		majBuffer(vertexBufferExt, extPoints);
+		majBuffer(vertexBufferPoints, points);
 		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
 		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
 
