@@ -355,7 +355,7 @@ void Triangulation::Delete(Point suppressedPoint)
 			}
 		}
 
-		for (int i = 0; i < incidentTriangles.size(); i++)
+		for (int i = 0; i < incidentEdges.size(); i++)
 		{
 			std::list<Edge>::iterator edgeToRemove;
 			edgeToRemove = std::find(aretes.begin(), aretes.end(), *incidentEdges[i]);
@@ -551,6 +551,8 @@ void Triangulation::Delete(Point suppressedPoint)
 						affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), First));
 						affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), Second));
 						affectedEdges.push_back(Third);
+
+						triangles.back().SetEgdeRefs();
 					}
 				}
 			}
