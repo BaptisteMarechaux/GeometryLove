@@ -466,6 +466,8 @@ void Triangulation::Delete(Point suppressedPoint)
 					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), First));
 					affectedEdges.erase(std::find(affectedEdges.begin(), affectedEdges.end(), Second));
 					affectedEdges.push_back(Third);
+
+					triangles.back().SetEgdeRefs();
 				}
 			}
 		
@@ -556,8 +558,19 @@ void Triangulation::Delete(Point suppressedPoint)
 					}
 				}
 			}
+			aretesExt.clear();
+
+			std::list<Edge>::iterator it = aretes.begin();
+			for (; it != aretes.end(); ++it)
+			{
+				if ((it->T1() != NULL && it->T2() == NULL) || (it->T1() == NULL && it->T2() != NULL))
+					aretesExt.push_back(&(*it));
+			}
 		}
 	}
+	
+	std::cout << "Suppression Finie" << std::endl;
+	
 }
 
 bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
