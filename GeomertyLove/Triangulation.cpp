@@ -482,6 +482,7 @@ void Triangulation::Delete(Point suppressedPoint)
 		}
 		else
 		{
+			//Polygone Ouvert
 			std::cout << "Open Polygon" << std::endl;
 			bool canAddTriangle = true;
 			while(affectedEdges.size() >= 3 && canAddTriangle)
@@ -495,7 +496,7 @@ void Triangulation::Delete(Point suppressedPoint)
 					p1 = affectedEdges[i]->p1;
 					for (auto j = 0; j < affectedEdges.size(); j++)
 					{
-						if (!(affectedEdges[i] == affectedEdges[j]))
+						if (!(affectedEdges[i] == affectedEdges[j])) //Pour tous les edges différents de affectedEdge[i]l;^pl
 						{
 							if (affectedEdges[i]->p2 == affectedEdges[j]->p1) //on vérifie si on trouve un sommet convexe incident
 							{
@@ -512,6 +513,11 @@ void Triangulation::Delete(Point suppressedPoint)
 								p2 = affectedEdges[j]->p2;
 								p3 = affectedEdges[j]->p1;
 								break;
+							}
+							else
+							{
+								std::cout << "Quelque chose ne va pas dans les triangles" << std::endl;
+								return;
 							}
 						}
 						
