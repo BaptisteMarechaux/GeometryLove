@@ -51,6 +51,8 @@ float last_movex, last_movey;
 
 int _selectMovePoint = 0;
 
+int trianglesCount, edgesCount, pointsCount;
+
 static bool drawPoints = true;
 static bool deletePoints = false;
 static bool jarvisMarchEnabled = false;
@@ -183,6 +185,10 @@ void Render()
 		glDrawArrays(GL_LINE_LOOP, 0, hull.size());
 		glBindVertexArray(0);
 	}
+
+	trianglesCount = T.GetTriangles().size();
+	edgesCount = T.GetAretes().size();
+	pointsCount = T.GetSommets().size();
 }
 
 void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
@@ -324,6 +330,7 @@ int main(int, char**)
 		}
 		ImGui::NextColumn();
 
+		
 		ImGui::Text("Graphic Manipulation");
 		if(!drawPoints && !deletePoints)
 			ImGui::Checkbox("Move Points", &movePointEnabled);
@@ -335,8 +342,16 @@ int main(int, char**)
 		ImGui::Columns(1);
 		ImGui::Separator();
 
+		ImGui::Text("Triangles : %d ", trianglesCount);
+		ImGui::Text("Edges %d ", edgesCount);
+		ImGui::Text("Points %d ", pointsCount);
+
 		if (ImGui::Button("Reset")) reset ^= 1;
-		if (ImGui::Button("Test Window")) show_test_window ^= 1;
+		//if (ImGui::Button("Test Window")) show_test_window ^= 1;
+
+		ImGui::SameLine();
+		ImGui::Text("Graphic Manipulation");
+		ImGui::Text("Graphic Manipulation");
 
 		ImGui::ColorEdit3("Triangulation color", (float*)&triangulation_color);
 		ImGui::ColorEdit3("Voronoi color", (float*)&voronoi_color);
@@ -356,11 +371,11 @@ int main(int, char**)
 		ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::End();
 
-		if (show_test_window)
-		{
-			ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
-			ImGui::ShowTestWindow(&show_test_window);
-		}
+		//if (show_test_window)
+		//{
+		//	ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiSetCond_FirstUseEver);
+		//	ImGui::ShowTestWindow(&show_test_window);
+		//}
 
 		if (reset)
 		{

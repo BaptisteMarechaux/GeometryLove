@@ -444,8 +444,6 @@ void Triangulation::Delete(Point suppressedPoint)
 		
 				if (canAddTriangle)
 				{
-					triangles.push_back(Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], third, p1, p2, p3));
-					triangles.back().SetEgdeRefs();
 
 					std::list<Edge>::iterator e;
 					Edge newEdge(p3, p1);
@@ -456,10 +454,14 @@ void Triangulation::Delete(Point suppressedPoint)
 						e = --aretes.end();
 					}
 
+					triangles.push_back(Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], &(*e), p1, p2, p3));
+					triangles.back().SetEgdeRefs();
+
 					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
 					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
 
-					affectedEdgesSort.push_back(third);
+					affectedEdgesSort.push_back(&(*e));
+
 					i = 0;
 				}
 				i++;
@@ -498,9 +500,9 @@ void Triangulation::Delete(Point suppressedPoint)
 			Edge* edgeRef = affectedEdgesSort[0];
 			int i = 0;
 			bool canAddTriangle = true;
-			while(affectedEdgesSort.size() >= 2 && canAddTriangle)
+
+			while(canAddTriangle && affectedEdgesSort.size() > 1)
 			{
-				
 				Point p1 = affectedEdgesSort[i]->p1;
 				Point p2 = affectedEdgesSort[i + 1]->p1;
 
@@ -511,7 +513,7 @@ void Triangulation::Delete(Point suppressedPoint)
 				std::vector<Point> pointsFromEdges;
 				getAllPointsFromListOriented(pointsFromEdges, affectedEdgesSort);
 
-				bool canAddTriangle = true;
+				canAddTriangle = true;
 				for (int i = 0; i < pointsFromEdges.size(); i++)
 				{
 					if (pointsFromEdges[i] != p1 
@@ -528,8 +530,6 @@ void Triangulation::Delete(Point suppressedPoint)
 
 				if (canAddTriangle)
 				{
-					triangles.push_back(Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], third, p1, p2, p3));
-					triangles.back().SetEgdeRefs();
 
 					std::list<Edge>::iterator e;
 					Edge newEdge(p3, p1);
@@ -540,11 +540,14 @@ void Triangulation::Delete(Point suppressedPoint)
 						e = --aretes.end();
 					}
 
+					triangles.push_back(Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], &(*e), p1, p2, p3));
+					triangles.back().SetEgdeRefs();
+
 					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
 					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
 
-					affectedEdgesSort.push_back(third);
-					i = 0;
+					affectedEdgesSort.push_back(&(*e));
+					i = -1;
 				}
 				i++;
 				if (i >= affectedEdgesSort.size())
