@@ -411,6 +411,8 @@ void Triangulation::Delete(Point suppressedPoint)
 			}
 		}
 		
+		std::cout << "Closed polygon " << isClosedPolygon << std::endl;
+
 		if (isClosedPolygon) //Cas du polygone fermé
 		{
 			auto sIndex=0;
@@ -595,7 +597,7 @@ void Triangulation::sortEdges(std::vector<Edge*>& edgesToSort, std::vector<Edge*
 			{
 				edgeRef = edgesToSort[i];
 				edgesSort.push_back(edgesToSort[i]);
-				i = 0;
+				i = - 1;
 			}
 			else if (edgeRef->p2 == edgesToSort[i]->p2)
 			{
@@ -608,7 +610,7 @@ void Triangulation::sortEdges(std::vector<Edge*>& edgesToSort, std::vector<Edge*
 				edgesToSort[i]->p2 = s1;
 
 				edgesSort.push_back(edgesToSort[i]);
-				i = -1;
+				i = - 1;
 			}
 		}
 		if (edgesSort.size() == edgesToSort.size())
