@@ -509,7 +509,7 @@ void Triangulation::Delete(Point suppressedPoint)
 
 				Triangle t = Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], third, p1, p2, p3);
 				std::vector<Point> pointsFromEdges;
-				getAllPointsFromList(pointsFromEdges, affectedEdgesSort);
+				getAllPointsFromListOriented(pointsFromEdges, affectedEdgesSort);
 
 				bool canAddTriangle = true;
 				for (int i = 0; i < pointsFromEdges.size(); i++)
@@ -521,7 +521,7 @@ void Triangulation::Delete(Point suppressedPoint)
 						canAddTriangle = false;
 				}
 
-				if (!isConvexPoint(p1, p3, p2))
+				if (!isConvexPoint(p2, p1, p3))
 				{
 					canAddTriangle = false;
 				}
