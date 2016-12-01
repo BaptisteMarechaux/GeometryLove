@@ -218,16 +218,15 @@ void callbackMousePos(GLFWwindow *window, int button, int action, int mods)
 		{
 			T.Delete(points[_selectMovePoint]);
 			points.erase(points.begin() + _selectMovePoint);
-		}
-		//reloadTriangulation();
-		majTriangulation();
-		majBuffer(vertexBufferPoints, points);
-		T.GetAllExtEdgesPoints(extPoints);
-		majBuffer(vertexBufferExt, extPoints);
-		
-		std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
-		std::cout << "Aretes " << T.GetAretes().size() << std::endl;
+			majBuffer(vertexBufferPoints, points);
 
+			majTriangulation();
+			T.GetAllExtEdgesPoints(extPoints);
+			majBuffer(vertexBufferExt, extPoints);
+
+			std::cout << "Triangles " << T.GetTriangles().size() << std::endl;
+			std::cout << "Aretes " << T.GetAretes().size() << std::endl;
+		}
 		_selectMovePoint = -1;
 	}
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS && movePointEnabled && ImGui::IsMouseHoveringAnyWindow() == 0)
