@@ -483,77 +483,61 @@ void Triangulation::Delete(Point suppressedPoint)
 		{
 			//Polygone Ouvert
 			std::cout << "Open Polygon" << std::endl;
+			Edge* edgeRef = affectedEdgesSort[0];
+			int i = 0;
 			bool canAddTriangle = true;
-			while(affectedEdgesSort.size() >= 3 && canAddTriangle)
+			while(affectedEdgesSort.size() >= 2 && canAddTriangle)
 			{
 				
-				Edge *First, *Second, *Third; //Edges constituant un triangle à ajouter à la liste
-				Point p1, p2, p3; //points consituant un triangle à ajouter à la liste
-				for (auto i = 0; i < affectedEdgesSort.size(); i++)
+				Point p1 = affectedEdgesSort[i]->p1;
+				Point p2 = affectedEdgesSort[i + 1]->p1;
+
+				Edge *third = new Edge(affectedEdgesSort[i + 1]->p2, affectedEdgesSort[i]->p1);
+				Point p3 = third->p1;
+
+				Triangle t = Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], third, p1, p2, p3);
+				std::vector<Point> pointsFromEdges;
+				getAllPointsFromList(pointsFromEdges, affectedEdgesSort);
+
+				bool canAddTriangle = true;
+				for (int i = 0; i < pointsFromEdges.size(); i++)
 				{
-					First = affectedEdgesSort[i];
-					p1 = affectedEdgesSort[i]->p1;
-					for (auto j = 0; j < affectedEdgesSort.size(); j++)
-					{
-						if (!(affectedEdgesSort[i] == affectedEdgesSort[j])) //Pour tous les edges différents de affectedEdge[i]l;^pl
-						{
-							if (affectedEdgesSort[i]->p2 == affectedEdgesSort[j]->p1) //on vérifie si on trouve un sommet convexe incident
-							{
-								Second = affectedEdgesSort[j];
-								Third = new Edge(affectedEdgesSort[j]->p2, affectedEdgesSort[i]->p1);
-								p2 = affectedEdgesSort[j]->p1;
-								p3 = affectedEdgesSort[j]->p2;
-								break;
-							}
-							else if (affectedEdgesSort[i]->p2 == affectedEdgesSort[j]->p2)
-							{
-								Second = affectedEdges[j];
-								Third = new Edge(affectedEdges[j]->p1, affectedEdges[i]->p1);
-								p2 = affectedEdgesSort[j]->p2;
-								p3 = affectedEdgesSort[j]->p1;
-								break;
-							}
-							else
-							{
-								std::cout << "Quelque chose ne va pas dans les triangles" << std::endl;
-								return;
-							}
-						}
-						
-					}
-					Triangle t = Triangle(First, Second, Third, p1, p2, p3);
-					for (auto j = 0; j < affectedEdgesSort.size(); j++)
-					{
-						if (
-							affectedEdgesSort[i]->p1 != t.P1() && affectedEdgesSort[i]->p1 != t.P2() && affectedEdgesSort[i]->p1 != t.P3() &&
-							affectedEdgesSort[i]->p2 != t.P1() && affectedEdgesSort[i]->p2 != t.P2() && affectedEdgesSort[i]->p2 != t.P3()
-							)
-						{
-							if (t.circumCircleContains(affectedEdgesSort[i]->p1) || t.circumCircleContains(affectedEdgesSort[i]->p2))
-							{
-								canAddTriangle = false;
-							}
-						}
-					}
-
-					if (!isConvexPoint(First->p1, Third->p2, First->p2))
+					if (pointsFromEdges[i] != p1 
+						&& pointsFromEdges[i] != p2 
+						&& pointsFromEdges[i] != p3
+						&& t.circumCircleContains(pointsFromEdges[i]))
 						canAddTriangle = false;
-					if (canAddTriangle)
-					{
-						triangles.push_back(Triangle(First, Second, Third, p1, p2, p3));
-						triangles.back().SetEgdeRefs();
-
-						aretes.push_back(*First);
-						aretes.push_back(*Second);
-						aretes.push_back(*Third);
-						sommets.push_back(p1);
-						sommets.push_back(p2);
-						sommets.push_back(p3);
-						affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), First));
-						affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), Second));
-						affectedEdgesSort.push_back(Third);
-					}
 				}
+
+				if (!isConvexPoint(p1, p3, p2))
+				{
+					canAddTriangle = false;
+				}
+
+				if (canAddTriangle)
+				{
+					triangles.push_back(Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], third, p1, p2, p3));
+					triangles.back().SetEgdeRefs();
+
+					std::list<Edge>::iterator e;
+					Edge newEdge(p3, p1);
+					e = std::find(aretes.begin(), aretes.end(), newEdge);
+					if (e == aretes.end())
+					{
+						aretes.push_back(newEdge);
+						e = --aretes.end();
+					}
+
+					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
+					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
+
+					affectedEdgesSort.push_back(third);
+					i = 0;
+				}
+				i++;
+				if (i >= affectedEdgesSort.size())
+					i = 0;
+
 			}
 			
 		}
