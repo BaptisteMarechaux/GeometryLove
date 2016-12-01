@@ -369,23 +369,20 @@ void Triangulation::Delete(Point suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
 
-		//Sort Edges in La2
-		std::vector<Edge*> affectedEdgesSort;
-		affectedEdgesSort.push_back(affectedEdges[0]);
-		sortEdges(affectedEdges, affectedEdgesSort, 0);
+	
 		
 		bool isClosedPolygon = true; //On peut simplifier en enlevant cette variable
 		int checked = 0;
 		//On va calculer le nombre d'occurences de chaque point
 		//Si un seul point n'apparait qu'une seule fois dans la liste, alors la liste est ouverte
-		for (unsigned int i = 0; i < affectedEdgesSort.size(); i++)
+		for (unsigned int i = 0; i < affectedEdges.size(); i++)
 		{
 			checked = 1;
-			for (unsigned int j = 0; j < affectedEdgesSort.size(); j++)
+			for (unsigned int j = 0; j < affectedEdges.size(); j++)
 			{
-				if (affectedEdgesSort[i] != affectedEdgesSort[j])
+				if (affectedEdges[i] != affectedEdges[j])
 				{
-					if (affectedEdgesSort[i]->p1 == affectedEdgesSort[j]->p1 || affectedEdgesSort[i]->p1 == affectedEdgesSort[j]->p2)
+					if (affectedEdges[i]->p1 == affectedEdges[j]->p1 || affectedEdges[i]->p1 == affectedEdges[j]->p2)
 						checked++;
 				}
 				
@@ -396,11 +393,11 @@ void Triangulation::Delete(Point suppressedPoint)
 				break;
 			}
 			checked = 1;
-			for (unsigned int j = 0; j < affectedEdgesSort.size(); j++)
+			for (unsigned int j = 0; j < affectedEdges.size(); j++)
 			{
-				if (affectedEdgesSort[i] != affectedEdgesSort[j])
+				if (affectedEdges[i] != affectedEdges[j])
 				{
-					if (affectedEdgesSort[i]->p2 == affectedEdgesSort[j]->p2 || affectedEdgesSort[i]->p2 == affectedEdgesSort[j]->p1)
+					if (affectedEdges[i]->p2 == affectedEdges[j]->p2 || affectedEdges[i]->p2 == affectedEdges[j]->p1)
 						checked++;
 				}
 			}
@@ -415,6 +412,11 @@ void Triangulation::Delete(Point suppressedPoint)
 
 		if (isClosedPolygon) //Cas du polygone fermé
 		{
+			//Sort Edges in La2
+			std::vector<Edge*> affectedEdgesSort;
+			affectedEdgesSort.push_back(affectedEdges[0]);
+			sortEdges(affectedEdges, affectedEdgesSort, 0);
+
 			auto sIndex=0;
 			
 			Edge* edgeRef = affectedEdgesSort[0];
@@ -429,7 +431,7 @@ void Triangulation::Delete(Point suppressedPoint)
 
 				Triangle t = Triangle(affectedEdgesSort[i], affectedEdgesSort[i + 1], third, p1, p2, p3);
 				std::vector<Point> pointsFromEdges;
-				getAllPointsFromList(pointsFromEdges, affectedEdgesSort);
+				getAllPointsFromListOriented(pointsFromEdges, affectedEdgesSort);
 
 				bool canAddTriangle = true;
 				for (int i = 0; i < pointsFromEdges.size(); i++)
@@ -481,6 +483,16 @@ void Triangulation::Delete(Point suppressedPoint)
 		}
 		else
 		{
+			//Sort Edges in La2
+			std::vector<Edge*> affectedEdgesSort;
+
+			std::vector<Point> pointsFromEdges;
+			int indexFirstEdge = -1;
+			getAllUniquePointsFromList(pointsFromEdges, affectedEdges, indexFirstEdge);
+
+			affectedEdgesSort.push_back(affectedEdges[indexFirstEdge]);
+			sortEdges(affectedEdges, affectedEdgesSort, indexFirstEdge);
+
 			//Polygone Ouvert
 			std::cout << "Open Polygon" << std::endl;
 			bool canAddTriangle = true;
@@ -578,11 +590,40 @@ bool Triangulation::checkVisibilityEdge(Edge &edge, Point &point)
 	return false;
 }
 
-void Triangulation::getAllPointsFromList(std::vector<Point>& pointsFind, std::vector<Edge*>& edges)
+void Triangulation::getAllPointsFromListOriented(std::vector<Point>& pointsFind, std::vector<Edge*>& edges)
 {
 	for (int i = 0; i < edges.size(); i++)
 	{
 		pointsFind.push_back(edges[i]->p1);
+	}
+}
+
+void Triangulation::getAllUniquePointsFromList(std::vector<Point>& pointsFind, std::vector<Edge*>& edges, int& indexEdge)
+{
+	for (int i = 0; i < edges.size(); i++)
+	{
+		if (std::find(pointsFind.begin(), pointsFind.end(), edges[i]->p1) == pointsFind.end())
+			pointsFind.push_back(edges[i]->p1);
+		else
+			pointsFind.erase(std::find(pointsFind.begin(), pointsFind.end(), edges[i]->p1));
+		if (std::find(pointsFind.begin(), pointsFind.end(), edges[i]->p2) == pointsFind.end())
+			pointsFind.push_back(edges[i]->p2);
+		else
+			pointsFind.erase(std::find(pointsFind.begin(), pointsFind.end(), edges[i]->p2));
+	}
+
+	for (int i = 0; i < edges.size(); i++)
+	{
+		if (pointsFind[0] == edges[i]->p1)
+			indexEdge = i;
+		if (pointsFind[0] == edges[i]->p2)
+		{
+			indexEdge = i;
+			Point s1 = edges[i]->p1;
+			Point s2 = edges[i]->p2;
+			edges[i]->p1 = s2;
+			edges[i]->p2 = s1;
+		}
 	}
 }
 
