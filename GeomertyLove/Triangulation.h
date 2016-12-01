@@ -20,7 +20,8 @@ class Triangulation
 		void Add(Point2D point2D);
 		void Delete(Point point2D);
 		bool checkVisibilityEdge(Edge &edge, Point &point);
-		void getAllPointsFromList(std::vector<Point>& pointsFind, std::vector<Edge*>& edges);
+		void getAllPointsFromListOriented(std::vector<Point>& pointsFind, std::vector<Edge*>& edges);
+		void getAllUniquePointsFromList(std::vector<Point>& pointsFind, std::vector<Edge*>& edges, int& indexEdge);
 		void sortEdges(std::vector<Edge*>& edgesToSort, std::vector<Edge*>& edgesSort, int index);
 		void Triangulation::GetVoronoi(std::vector<Point2D> &voronoi);
 
