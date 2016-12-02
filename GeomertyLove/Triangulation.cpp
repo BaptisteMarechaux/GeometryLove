@@ -298,24 +298,28 @@ void Triangulation::Add(Point2D point2D)
 
 void Triangulation::Delete(Point suppressedPoint)
 {
-	//Déroulé : 
-	//Cas A : T ne contient aucun triangle/ les sommets sont colinéaires
-		//
-	//Cas B : T contient des triangles
-		//Determiner quel triangle contient suppressedPoint et.. :
-		//faire une liste LA1 d'arretes incidentes, liste LT de triangles incidents aux arretes de LA1 , liste LA2 d'arretes incidentes aux triangles mais non incidentes à supressedPoint
-		//supprimer le tout sauf LA2
-		//2 cas : 
-		//Polygone fermé
-
-		//Polygone ouvert
 	std::vector<Triangle*> incidentTriangles;
 	std::vector<Edge*> incidentEdges;
-	std::vector<Edge*> affectedEdges; //Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point : La2
-
+	//Edges incidents aux triangles de "incidentTriangles" mais pas incidents à supressed point : La2
+	std::vector<Edge*> affectedEdges; 
 	if (triangles.size() <= 0)
 	{
-
+		if (aretes.size() == 0)
+			sommets.erase(std::find(sommets.begin(), sommets.end(), suppressedPoint));
+		if (aretes.size() > 0)
+		{
+			std::list<Edge>::iterator it = aretes.begin();
+			for (; it != aretes.end(); ++it)
+			{
+				if (suppressedPoint == it->p1 || suppressedPoint == it->p2)
+					aretes.erase(std::find(aretes.begin(), aretes.end(), *(it)));
+			}
+			for (int i = 0; i < sommets.size(); i++)
+			{
+				if (sommets[i] == suppressedPoint)
+					sommets.erase(sommets.begin() + i);
+			}
+		}
 	}
 	else
 	{
@@ -369,8 +373,6 @@ void Triangulation::Delete(Point suppressedPoint)
 				sommets.erase(sommets.begin() + i);
 		}
 
-	
-		
 		bool isClosedPolygon = true; //On peut simplifier en enlevant cette variable
 		int checked = 0;
 		//On va calculer le nombre d'occurences de chaque point
@@ -408,8 +410,6 @@ void Triangulation::Delete(Point suppressedPoint)
 			}
 		}
 		
-		std::cout << "Closed polygon " << isClosedPolygon << std::endl;
-
 		if (isClosedPolygon) //Cas du polygone fermé
 		{
 			//Sort Edges in La2
@@ -461,27 +461,29 @@ void Triangulation::Delete(Point suppressedPoint)
 					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
 
 					affectedEdgesSort.push_back(&(*e));
-
-					i = 0;
+					affectedEdges = affectedEdgesSort;
+					affectedEdgesSort.clear();
+					affectedEdgesSort.push_back(affectedEdges[0]);
+					sortEdges(affectedEdges, affectedEdgesSort, 0);
+					i = -1;
 				}
 				i++;
 			}
 			
 			//verify if list already sort
-			if (affectedEdgesSort[0]->p2 == affectedEdgesSort[1]->p1 &&  affectedEdgesSort[1]->p2 == affectedEdgesSort[2]->p1 && affectedEdgesSort[2]->p2 == affectedEdgesSort[0]->p1)
-				std::cout << "already sort";
-			else
+			if (!(affectedEdgesSort[0]->p2 == affectedEdgesSort[1]->p1 &&  affectedEdgesSort[1]->p2 == affectedEdgesSort[2]->p1 && affectedEdgesSort[2]->p2 == affectedEdgesSort[0]->p1))
 			{
 				affectedEdges = affectedEdgesSort;
 				affectedEdgesSort.clear();
 				affectedEdgesSort.push_back(affectedEdges[2]);
 				sortEdges(affectedEdges, affectedEdgesSort, 2);
-				std::cout << "not sort";
 			}
-
 			//il devrait rester 3 edges
-			triangles.push_back(Triangle(affectedEdgesSort[0], affectedEdgesSort[1], affectedEdgesSort[2], affectedEdgesSort[0]->p1, affectedEdgesSort[1]->p1, affectedEdgesSort[2]->p1));
-			triangles.back().SetEgdeRefs();
+			if (affectedEdgesSort.size() == 3)
+			{
+				triangles.push_back(Triangle(affectedEdgesSort[0], affectedEdgesSort[1], affectedEdgesSort[2], affectedEdgesSort[0]->p1, affectedEdgesSort[1]->p1, affectedEdgesSort[2]->p1));
+				triangles.back().SetEgdeRefs();
+			}
 		}
 		else
 		{
@@ -496,7 +498,6 @@ void Triangulation::Delete(Point suppressedPoint)
 			sortEdges(affectedEdges, affectedEdgesSort, indexFirstEdge);
 
 			//Polygone Ouvert
-			std::cout << "Open Polygon" << std::endl;
 			Edge* edgeRef = affectedEdgesSort[0];
 			int i = 0;
 			bool canAddTriangle = true;
@@ -547,6 +548,12 @@ void Triangulation::Delete(Point suppressedPoint)
 					affectedEdgesSort.erase(std::find(affectedEdgesSort.begin(), affectedEdgesSort.end(), affectedEdgesSort[i]));
 
 					affectedEdgesSort.push_back(&(*e));
+
+					affectedEdges = affectedEdgesSort;
+					affectedEdgesSort.clear();
+					affectedEdgesSort.push_back(affectedEdges[0]);
+					sortEdges(affectedEdges, affectedEdgesSort, 0);
+
 					i = -1;
 				}
 				i++;
@@ -617,6 +624,7 @@ void Triangulation::getAllUniquePointsFromList(std::vector<Point>& pointsFind, s
 void Triangulation::sortEdges(std::vector<Edge*>& edgesToSort, std::vector<Edge*>& edgesSort, int index)
 {
 	Edge *edgeRef = edgesToSort[index];
+
 	for (int i = 0; i < edgesToSort.size(); i++)
 	{
 		if (edgeRef != edgesToSort[i])
@@ -629,7 +637,6 @@ void Triangulation::sortEdges(std::vector<Edge*>& edgesToSort, std::vector<Edge*
 			}
 			else if (edgeRef->p2 == edgesToSort[i]->p2)
 			{
-
 				edgeRef = edgesToSort[i];
 				Point s1 = edgesToSort[i]->p1;
 				Point s2 = edgesToSort[i]->p2;
